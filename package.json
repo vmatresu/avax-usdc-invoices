@@ -15,8 +15,12 @@
     "typecheck": "tsc --noEmit",
     "typecheck:web": "pnpm --filter web typecheck",
     "typecheck:shared": "pnpm --filter shared typecheck",
-    "test": "pnpm --filter contracts test",
-    "test:watch": "pnpm --filter contracts test:watch",
+    "test": "pnpm --filter contracts test && pnpm --filter shared test && pnpm --filter web test",
+    "test:shared": "pnpm --filter shared test",
+    "test:web": "pnpm --filter web test",
+    "test:contracts": "pnpm --filter contracts test",
+    "test:watch": "pnpm --filter shared test:watch",
+    "test:coverage": "pnpm --filter shared test:coverage && pnpm --filter web test:coverage",
     "clean": "pnpm --filter web clean && pnpm --filter contracts clean",
     "deploy:fuji": "pnpm --filter contracts deploy:fuji",
     "deploy:mainnet": "pnpm --filter contracts deploy:mainnet",
@@ -49,6 +53,7 @@
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
+    "ts-jest": "^29.1.1",
     "typescript": "^5.3.3"
   },
   "engines": {
