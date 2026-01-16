@@ -8,6 +8,7 @@ A minimal, safe-by-default MVP monorepo for on-chain invoice management on Avala
 - Verifiable receipts with transaction hashes and decoded events
 - No backend, no database, pure on-chain data
 - Uses Avalanche C-Chain JSON-RPC via public endpoints
+- **Production-grade architecture with SOLID principles and DRY**
 
 **⚠️ Important: Native USDC Only**
 
@@ -93,56 +94,96 @@ pnpm dev
 
 Visit `http://localhost:3000` to see the landing page.
 
-## Deploy to Fuji (Detailed Steps)
+## Documentation
 
-### 1. Get Testnet AVAX
+Complete documentation is available in the `/docs` folder:
 
-Visit the [Avalanche Fuji Faucet](https://faucet.avax.network/) and request testnet AVAX.
+- [Documentation Index](./docs/README.md)
+- [Architecture Overview](./docs/architecture/overview.md)
+- [Contract Documentation](./docs/contracts/invoice-manager.md)
+- [Fuji Deployment Guide](./docs/deployment/fuji.md)
+- [Mainnet Deployment Guide](./docs/deployment/mainnet.md)
+- [Development Guide](./docs/development/setup.md)
+- [Contributing Guide](./docs/contributing/overview.md)
+- [Troubleshooting Guide](./docs/troubleshooting/wallet.md)
 
-### 2. Get Testnet USDC
+### Quick Links
 
-The Fuji native USDC faucet: [https://testbridge.circle.com/](https://testbridge.circle.com/) or use a testnet faucet that provides USDC.
+- **For Merchants**: [Creating Invoices](./docs/guides/merchant/creating-invoices.md)
+- **For Customers**: [Paying Invoices](./docs/guides/customer/paying-invoices.md)
+- **For Developers**: [Development Setup](./docs/development/setup.md)
+- **For Operations**: [Deployment Guide](./docs/deployment/fuji.md)
 
-### 3. Configure Environment
+## Architecture
 
-Edit `contracts/.env.fuji`:
-```bash
-RPC_URL=https://api.avax-test.network/ext/bc/C/rpc
-PRIVATE_KEY=0x...your_private_key_here
+### SOLID Principles
+
+The codebase follows SOLID principles for maintainability and scalability:
+
+1. **Single Responsibility Principle (SRP)**
+   - Each class, function, and component has one reason to change
+   - `InvoiceRepository` handles data access only
+   - `InvoiceService` handles business logic only
+   - `InvoiceStatusBadge` handles status display only
+
+2. **Open/Closed Principle (OCP)**
+   - Entities are open for extension but closed for modification
+   - Interface-based design allows swapping implementations
+   - New invoice types can be added without modifying existing code
+
+3. **Liskov Substitution Principle (LSP)**
+   - Derived classes are substitutable for base classes
+   - `ConsoleLogger` and `NoOpLogger` implement `ILogger`
+   - Any logger implementation can be used interchangeably
+
+4. **Interface Segregation Principle (ISP)**
+   - Clients don't depend on unused methods
+   - Small, focused interfaces (e.g., `IInvoiceRepository`, `IInvoiceService`)
+   - Each interface has methods relevant to its purpose
+
+5. **Dependency Inversion Principle (DIP)**
+   - High-level modules depend on abstractions, not details
+   - Components depend on interfaces, not concrete implementations
+   - Easy to swap database, logger, or analytics provider
+
+### DRY (Don't Repeat Yourself)
+
+Code duplication is minimized through:
+
+- **Shared types package**: Centralized type definitions
+- **Custom hooks**: Reusable stateful logic
+- **Service layer**: Reusable business logic
+- **Component library**: Reusable UI components
+- **Utility functions**: Shared helper functions
+
+### Layered Architecture
+
 ```
-
-⚠️ **Security Warning:** Never commit your private key. The `.env.fuji` file is in `.gitignore`.
-
-### 4. Deploy Contract
-
-```bash
-pnpm deploy:fuji
+┌─────────────────────────────────────────┐
+│          Presentation Layer          │
+│  (Next.js Pages, React Components) │
+└──────────────┬──────────────────────┘
+               │ uses
+┌──────────────▼──────────────────────┐
+│            Hooks Layer              │
+│  (useInvoice, useWallet, etc.)   │
+└──────────────┬──────────────────────┘
+               │ uses
+┌──────────────▼──────────────────────┐
+│          Service Layer              │
+│  (InvoiceService, InvoiceRepo)     │
+└──────────────┬──────────────────────┘
+               │ uses
+┌──────────────▼──────────────────────┐
+│          Contracts Layer           │
+│  (InvoiceManager, USDC)          │
+└──────────────┬──────────────────────┘
+               │ uses
+┌──────────────▼──────────────────────┐
+│          Shared Package            │
+│  (Types, Constants, Utils)      │
+└─────────────────────────────────────┘
 ```
-
-You'll see output like:
-```
-========================================
-InvoiceManager deployed to Fuji
-========================================
-Contract Address: 0x1234567890abcdef1234567890abcdef12345678
-Deployer Address: 0xabcdef1234567890abcdef1234567890abcdef12
-Network: Avalanche Fuji Testnet (C-Chain)
-Chain ID: 43113
-========================================
-```
-
-### 5. Update Web App Configuration
-
-Edit `.env` (or `.env.local` for development):
-```bash
-NEXT_PUBLIC_INVOICE_MANAGER_ADDRESS=0xYourDeployedContractAddress
-```
-
-### 6. Verify Deployment
-
-1. Check the contract on [Snowtrace Testnet](https://testnet.snowtrace.io/)
-2. Verify the contract code is deployed
-3. Test the web app by creating an invoice
 
 ## ERC-20 Approvals Explained
 
@@ -366,6 +407,8 @@ Avalanche has **two different USDC tokens**:
    - Must be native USDC, not USDC.e
    - Check Circle's [official addresses](https://www.circle.com/usdc#networks)
 
+For more troubleshooting help, see [Troubleshooting Guide](./docs/troubleshooting/wallet.md).
+
 ## Project Structure
 
 ```
@@ -381,10 +424,16 @@ avax-usdc-invoices/
 │   ├── foundry.toml
 │   └── package.json
 ├── packages/
-│   └── shared/               # Shared types and ABIs
-│       ├── index.ts
-│       ├── tsconfig.json
-│       └── package.json
+│   └── shared/               # Shared types and utilities
+│       ├── types/            # Domain types
+│       ├── constants/         # Application constants
+│       ├── utils/validation.ts # Validation utilities
+│       ├── errors/            # Custom error classes
+│       ├── interfaces/        # Core service interfaces
+│       ├── logger/            # Logging infrastructure
+│       ├── index.ts          # Central exports
+│       ├── package.json
+│       └── tsconfig.json
 ├── apps/
 │   └── web/                  # Next.js 14 frontend
 │       ├── app/
@@ -403,16 +452,37 @@ avax-usdc-invoices/
 │       ├── components/
 │       │   └── ui/                    # UI components
 │       ├── lib/
-│       │   ├── wagmi.ts               # Wagmi config
-│       │   ├── contracts.ts           # Contract ABIs
-│       │   └── utils.ts               # Utility functions
+│       │   ├── hooks/                 # Custom hooks
+│       │   │   ├── useInvoice.ts
+│       │   │   ├── useInvoiceOperations.ts
+│       │   │   └── useError.ts
+│       │   ├── services/              # Business logic
+│       │   │   ├── InvoiceRepository.ts
+│       │   │   └── InvoiceService.ts
+│       │   ├── config/                # Configuration
+│       │   │   └── network.ts
+│       │   ├── components/            # Reusable components
+│       │   ├── contracts/
+│       │   │   └── abi.ts
+│       │   ├── utils/
+│       │   └── wagmi.ts
 │       ├── package.json
 │       ├── tsconfig.json
 │       ├── tailwind.config.ts
 │       └── next.config.mjs
+├── docs/                     # Comprehensive documentation
+│   ├── README.md               # Documentation index
+│   ├── architecture/            # Architecture documentation
+│   ├── contracts/              # Contract documentation
+│   ├── deployment/             # Deployment guides
+│   ├── development/            # Development guides
+│   ├── contributing/           # Contributing guides
+│   ├── troubleshooting/        # Troubleshooting guides
+│   └── guides/                # User guides
 ├── package.json               # Root package.json
 ├── pnpm-workspace.yaml        # PNPM workspace config
 ├── .env.example               # Environment template
+├── CHANGELOG.md              # Changelog
 └── README.md                  # This file
 ```
 
@@ -453,6 +523,12 @@ This is a minimal MVP. Areas for future development:
 5. Batch payment processing
 6. USD price feed integration
 
+For contribution guidelines, see [Contributing Guide](./docs/contributing/overview.md).
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for version history and release notes.
+
 ## License
 
 MIT
@@ -460,9 +536,11 @@ MIT
 ## Support
 
 For issues and questions:
-1. Check the [Troubleshooting](#troubleshooting) section
-2. Review the [Avalanche C-Chain Docs](https://docs.avax.network/)
-3. Contact the development team
+1. Check [Documentation Index](./docs/README.md)
+2. Review [Architecture Documentation](./docs/architecture/overview.md)
+3. Check [Troubleshooting Guide](./docs/troubleshooting/wallet.md)
+4. Search [GitHub Issues](https://github.com/your-org/avax-usdc-invoices/issues)
+5. Contact the development team
 
 ---
 
@@ -472,3 +550,8 @@ For issues and questions:
 - [Wagmi](https://wagmi.sh/) - React hooks for Ethereum
 - [Viem](https://viem.sh/) - TypeScript interface for Ethereum
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
+- [pnpm](https://pnpm.io/) - Package management
+
+**Version:** 1.0.0
+**Last Updated:** 2024-01-15
