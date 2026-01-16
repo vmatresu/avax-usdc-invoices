@@ -1,120 +1,92 @@
-// Network Configuration
-export const NETWORKS = {
-  FUJI: {
-    chainId: 43113,
-    name: 'Avalanche Fuji Testnet',
-    rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',
-    explorerUrl: 'https://testnet.snowtrace.io',
-  },
-  MAINNET: {
-    chainId: 43114,
-    name: 'Avalanche Mainnet C-Chain',
-    rpcUrl: 'https://api.avax.network/ext/bc/C/rpc',
-    explorerUrl: 'https://snowtrace.io',
-  },
-} as const;
+/**
+ * Central export point for shared package
+ * Single Responsibility: Provides clean API for consumers
+ */
 
-export type NetworkKey = keyof typeof NETWORKS;
+// Types
+export type {
+  Invoice,
+  CreateInvoiceParams,
+  PaymentParams,
+  NetworkConfig,
+  DeploymentConfig,
+  NetworkKey,
+  InvoiceCreatedEvent,
+  InvoicePaidEvent,
+  InvoiceOperationState,
+  ValidationResult,
+} from './types';
 
-// Invoice Types
-export interface Invoice {
-  merchant: string;
-  token: string;
-  amount: bigint;
-  dueAt: number;
-  paid: boolean;
-  payer: string;
-  paidAt: number;
-}
+export { InvoiceStatus } from './types';
 
-export interface InvoiceCreatedEvent {
-  invoiceId: string;
-  merchant: string;
-  token: string;
-  amount: bigint;
-  dueAt: number;
-}
+// Constants
+export {
+  NETWORKS,
+  USDC_ADDRESSES,
+  USDC_DECIMALS,
+  GAS_LIMITS,
+  INVOICE_SETTINGS,
+  UI_CONSTANTS,
+  ERROR_MESSAGES,
+  VALIDATION_PATTERNS,
+  TRANSACTION_STATUS,
+} from './constants';
 
-export interface InvoicePaidEvent {
-  invoiceId: string;
-  merchant: string;
-  payer: string;
-  token: string;
-  amount: bigint;
-  paidAt: number;
-}
+// Validation utilities
+export {
+  validateAddress,
+  validateBytes32,
+  validateUUID,
+  validateAmount,
+  validateDueDate,
+  validateCreateInvoice,
+  isInvoiceExpired,
+  formatUSDC,
+  parseUSDC,
+  formatTimestamp,
+  shortenAddress,
+  shortenTxHash,
+  uuidToBytes32,
+  generateUUID,
+} from './utils/validation';
 
-// Contract ABIs (will be populated after compilation)
-export const INVOICE_MANAGER_ABI = [
-  {
-    type: 'function',
-    name: 'createInvoice',
-    stateMutability: 'nonpayable',
-    inputs: [
-      { name: 'invoiceId', type: 'bytes32' },
-      { name: 'token', type: 'address' },
-      { name: 'amount', type: 'uint256' },
-      { name: 'dueAt', type: 'uint64' },
-    ],
-    outputs: [],
-  },
-  {
-    type: 'function',
-    name: 'payInvoice',
-    stateMutability: 'nonpayable',
-    inputs: [{ name: 'invoiceId', type: 'bytes32' }],
-    outputs: [],
-  },
-  {
-    type: 'function',
-    name: 'getInvoice',
-    stateMutability: 'view',
-    inputs: [{ name: 'invoiceId', type: 'bytes32' }],
-    outputs: [
-      { name: 'merchant', type: 'address' },
-      { name: 'token', type: 'address' },
-      { name: 'amount', type: 'uint256' },
-      { name: 'dueAt', type: 'uint64' },
-      { name: 'paid', type: 'bool' },
-      { name: 'payer', type: 'address' },
-      { name: 'paidAt', type: 'uint64' },
-    ],
-  },
-  {
-    type: 'event',
-    name: 'InvoiceCreated',
-    inputs: [
-      { name: 'invoiceId', type: 'bytes32', indexed: true },
-      { name: 'merchant', type: 'address', indexed: true },
-      { name: 'token', type: 'address', indexed: false },
-      { name: 'amount', type: 'uint256', indexed: false },
-      { name: 'dueAt', type: 'uint64', indexed: false },
-    ],
-  },
-  {
-    type: 'event',
-    name: 'InvoicePaid',
-    inputs: [
-      { name: 'invoiceId', type: 'bytes32', indexed: true },
-      { name: 'merchant', type: 'address', indexed: true },
-      { name: 'payer', type: 'address', indexed: true },
-      { name: 'token', type: 'address', indexed: false },
-      { name: 'amount', type: 'uint256', indexed: false },
-      { name: 'paidAt', type: 'uint64', indexed: false },
-    ],
-  },
-] as const;
+// Errors
+export {
+  AppError,
+  WalletNotConnectedError,
+  WrongNetworkError,
+  InvoiceNotFoundError,
+  InvoiceAlreadyPaidError,
+  InvoiceExpiredError,
+  InvoiceValidationError,
+  InsufficientFundsError,
+  InsufficientAllowanceError,
+  TransactionFailedError,
+  TransactionRevertedError,
+  NetworkError,
+  RPCError,
+  ConfigurationError,
+  isAppError,
+  getErrorMessage,
+  getErrorCode,
+} from './errors';
 
-// USDC Decimals
-export const USDC_DECIMALS = 6;
+// Interfaces
+export type {
+  IInvoiceRepository,
+  IInvoiceService,
+  ITransactionMonitor,
+  INetworkConfig,
+  ILogger,
+  IAnalytics,
+  ICache,
+  IValidator,
+} from './interfaces';
 
-// Deployment info file path (will be generated)
-export const DEPLOYMENT_INFO_PATH = './deployment-info.json';
-
-export interface DeploymentInfo {
-  network: NetworkKey;
-  address: string;
-  transactionHash: string;
-  blockNumber: number;
-  deployedAt: string;
-}
+// Logger
+export {
+  ConsoleLogger,
+  NoOpLogger,
+  LogLevel,
+  logger,
+} from './logger';

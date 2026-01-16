@@ -1,16 +1,22 @@
-import { publicClient, walletClient } from 'wagmi'
-import { createPublicClient, createWalletClient, http } from 'viem'
-import { avalancheFuji, avalanche } from 'wagmi/chains'
+/**
+ * Wagmi configuration
+ * Single Responsibility: Manages wagmi client setup
+ */
 
-export const chainId = parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '43113')
-export const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || 'https://api.avax-test.network/ext/bc/C/rpc'
-export const explorerUrl = process.env.NEXT_PUBLIC_EXPLORER_BASE_URL || 'https://testnet.snowtrace.io'
-export const usdcAddress = process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`
-export const invoiceManagerAddress = process.env.NEXT_PUBLIC_INVOICE_MANAGER_ADDRESS as `0x${string}`
+import { createConfig, http } from 'wagmi';
+import { avalancheFuji, avalanche } from 'wagmi/chains';
+import { NetworkConfigService } from './config/network';
 
-export const chain = chainId === 43114 ? avalanche : avalancheFuji
+const networkConfig = NetworkConfigService.getInstance();
+const chainId = networkConfig.getChainId();
 
-export const client = createPublicClient({
-  chain,
-  transport: http(rpcUrl),
-})
+export const config = createConfig({
+  chains: chainId === 43114 ? [avalanche] : [avalancheFuji],
+  transports: {
+    [chainId === 43114 ? avalanche.id : avalancheFuji.id]: http(
+      networkConfig.getRpcUrl()
+    ),
+  },
+});
+
+export const chainIdNumber = chainId;
