@@ -5,11 +5,10 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import type { CreateInvoiceParams, PaymentParams, InvoiceOperationState } from '@avalanche-bridge/shared';
 import {
-  InvoiceService,
   logger,
   GAS_LIMITS,
 } from '@avalanche-bridge/shared';

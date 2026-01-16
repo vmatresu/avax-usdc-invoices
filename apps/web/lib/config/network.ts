@@ -3,7 +3,7 @@
  * Single Responsibility: Manages network settings
  */
 
-import { NETWORKS, USDC_ADDRESSES } from '@avalanche-bridge/shared';
+import { NETWORKS, USDC_ADDRESSES, type NetworkConfig } from '@avalanche-bridge/shared';
 import type { INetworkConfig } from '@avalanche-bridge/shared';
 
 export class NetworkConfigService implements INetworkConfig {

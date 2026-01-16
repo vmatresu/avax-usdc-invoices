@@ -20,3 +20,8 @@ export const config = createConfig({
 });
 
 export const chainIdNumber = chainId;
+
+// Export public client for use in services
+export const publicClient = config.getClient({
+  chainId: chainId === 43114 ? avalanche.id : avalancheFuji.id,
+});

@@ -7,13 +7,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAccount } from 'wagmi';
-import type { Invoice, InvoiceStatus } from '@avalanche-bridge/shared';
+import type { Invoice } from '@avalanche-bridge/shared';
 import {
-  InvoiceRepository,
   logger,
   InvoiceStatus,
   isInvoiceExpired,
 } from '@avalanche-bridge/shared';
+import { InvoiceRepository } from '../services/InvoiceRepository';
 import { getErrorMessage } from './useError';
 
 interface UseInvoiceReturn {
