@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert'
-import { invoiceManagerAddress, usdcAddress, client } from '@/lib/wagmi'
+import { invoiceManagerAddress, usdcAddress, publicClient } from '@/lib/wagmi'
 import { INVOICE_MANAGER_ABI, USDC_ABI, getInvoicePaidLog } from '@/lib/contracts'
+import { parseUnits } from 'viem'
+import { logger } from '@avalanche-bridge/shared'
 import { formatUSDC, formatDate, shortenAddress } from '@/lib/utils'
 import Link from 'next/link'
 
@@ -54,7 +56,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
     address: usdcAddress,
     abi: USDC_ABI,
     functionName: 'allowance',
-    args: [address || '0x0000000000000000000000000000000000000000', invoiceManagerAddress],
+    args: [address || '0x0000000000000000000000000000000000000000000', invoiceManagerAddress],
     enabled: !!address && !!invoiceManagerAddress && !!usdcAddress,
   })
 
@@ -62,7 +64,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
     address: usdcAddress,
     abi: USDC_ABI,
     functionName: 'balanceOf',
-    args: [address || '0x0000000000000000000000000000000000000000'],
+    args: [address || '0x0000000000000000000000000000000000000000000'],
     enabled: !!address && !!usdcAddress,
   })
 
@@ -89,7 +91,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
         setPaymentLog(log as PaymentLog)
       }
     } catch (err) {
-      console.error('Error loading payment log:', err)
+      logger.error('Error loading payment log', err as Error, { invoiceId })
     }
   }
 
@@ -98,7 +100,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
     if (!address || !invoice) return
 
     const amount = approvalAmount || (invoice.amount / 10n ** 6n).toString()
-    const amountInWei = BigInt(parseFloat(amount) * 10 ** 6)
+    const amountInWei = parseUnits(amount, 6)
 
     try {
       approveUSDC({
@@ -108,7 +110,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
         args: [invoiceManagerAddress, amountInWei],
       })
     } catch (err) {
-      console.error('Error approving:', err)
+      logger.error('Error approving USDC', err as Error, { amount })
       setError('Failed to approve USDC. Please try again.')
     }
   }
@@ -125,7 +127,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
         args: [invoiceId],
       })
     } catch (err) {
-      console.error('Error paying:', err)
+      logger.error('Error paying invoice', err as Error, { invoiceId })
       setError('Failed to pay invoice. Please try again.')
     }
   }
@@ -291,7 +293,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
                       <h3 className="mb-3 font-semibold">Step 2: Pay Invoice</h3>
                       <div className="space-y-3">
                         <div className="text-sm text-slate-500">
-                          Complete the payment of {formatUSDC(invoice.amount)} USDC
+                          Complete payment of {formatUSDC(invoice.amount)} USDC
                         </div>
                         <Button
                           onClick={handlePay}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMerchantInvoiceCreatedLogs, getInvoice } from '@/lib/contracts'
 import { invoiceManagerAddress } from '@/lib/wagmi'
+import { logger } from '@avalanche-bridge/shared'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ invoices })
   } catch (error) {
-    console.error('Error fetching invoices:', error)
+    logger.error('Error fetching invoices', error as Error, { merchant })
     return NextResponse.json({ error: 'Failed to fetch invoices' }, { status: 500 })
   }
 }

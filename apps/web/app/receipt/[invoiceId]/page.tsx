@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert'
-import { invoiceManagerAddress, client } from '@/lib/wagmi'
+import { invoiceManagerAddress, publicClient } from '@/lib/wagmi'
 import { INVOICE_MANAGER_ABI, getInvoice, getInvoicePaidLog } from '@/lib/contracts'
+import { logger } from '@avalanche-bridge/shared'
 import { formatUSDC, formatDate, shortenAddress } from '@/lib/utils'
 import Link from 'next/link'
 
@@ -61,7 +62,7 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
         }
       }
     } catch (err) {
-      console.error('Error loading receipt:', err)
+      logger.error('Error loading receipt', err as Error, { invoiceId })
       setError('Failed to load receipt. The invoice may not exist.')
     } finally {
       setLoading(false)
@@ -84,10 +85,7 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-8">
         <div className="mx-auto max-w-2xl">
-          <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">
-            ← Back to Home
-          </Link>
-          <Alert variant="destructive" className="mt-6">
+          <Alert variant="destructive">
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
@@ -100,10 +98,7 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-8">
         <div className="mx-auto max-w-2xl">
-          <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">
-            ← Back to Home
-          </Link>
-          <Alert variant="destructive" className="mt-6">
+          <Alert variant="destructive">
             <AlertTitle>Invoice Not Found</AlertTitle>
             <AlertDescription>
               The invoice with ID {shortenAddress(invoiceId)} does not exist.
@@ -121,15 +116,24 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
           <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">
             ← Back to Home
           </Link>
-          <h1 className="mt-4 text-4xl font-bold">Receipt</h1>
-          <p className="mt-2 text-slate-500">
-            Verifiable on-chain payment receipt
+          <h1 className="mt-4 text-4xl font-bold">Payment Receipt</h1>
+          <p className="mt-2 text-slate-600 dark:text-slate-400">
+            Verifiable proof of on-chain payment
           </p>
         </div>
 
-        <Card>
+        {!invoice.paid && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTitle>Invoice Not Paid</AlertTitle>
+            <AlertDescription>
+              This invoice has not been paid yet. Please visit the payment page to complete the transaction.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Invoice Status</CardTitle>
+            <CardTitle>Invoice Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between">
@@ -139,20 +143,20 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
 
             <div className="flex justify-between">
               <span className="text-slate-500">Merchant</span>
-              <a
-                href={`${explorerUrl}/address/${invoice.merchant}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-mono text-sm text-blue-600 hover:underline"
-              >
-                {shortenAddress(invoice.merchant)}
-              </a>
+              <span className="font-mono text-sm">{shortenAddress(invoice.merchant)}</span>
             </div>
 
             <div className="flex justify-between">
               <span className="text-slate-500">Amount</span>
               <span className="font-semibold text-2xl">{formatUSDC(invoice.amount)} USDC</span>
             </div>
+
+            {invoice.dueAt > 0 && (
+              <div className="flex justify-between">
+                <span className="text-slate-500">Due Date</span>
+                <span>{formatDate(invoice.dueAt)}</span>
+              </div>
+            )}
 
             <div className="flex justify-between">
               <span className="text-slate-500">Status</span>
@@ -166,133 +170,101 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
                 </span>
               )}
             </div>
+
+            {invoice.paid && invoice.payer && (
+              <div className="flex justify-between">
+                <span className="text-slate-500">Payer</span>
+                <span className="font-mono text-sm">{shortenAddress(invoice.payer)}</span>
+              </div>
+            )}
+
+            {invoice.paid && invoice.paidAt > 0 && (
+              <div className="flex justify-between">
+                <span className="text-slate-500">Paid At</span>
+                <span>{formatDate(invoice.paidAt)}</span>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {invoice.paid ? (
-          <>
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>On-Chain State</CardTitle>
-                <CardDescription>
-                  Current state from the contract
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+        {invoice.paid && paymentLog && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment Details</CardTitle>
+              <CardDescription>
+                Complete transaction information for verification
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Transaction Hash</span>
+                <a
+                  href={`${explorerUrl}/tx/${paymentLog.transactionHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-sm text-blue-600 hover:underline"
+                >
+                  {shortenAddress(paymentLog.transactionHash)}
+                </a>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-slate-500">Block Number</span>
+                <span className="font-mono text-sm">{paymentLog.blockNumber.toString()}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-slate-500">Amount Paid</span>
+                <span className="font-semibold">{formatUSDC(paymentLog.args?.amount || 0n)} USDC</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-slate-500">Payment Timestamp</span>
+                <span>{formatDate(paymentLog.args?.paidAt || 0)}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-slate-500">Token</span>
+                <span className="font-mono text-sm">{shortenAddress(paymentLog.args?.token || invoice.token)}</span>
+              </div>
+
+              {paymentLog.args?.merchant && (
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Payer</span>
-                  <a
-                    href={`${explorerUrl}/address/${invoice.payer}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono text-sm text-blue-600 hover:underline"
-                  >
-                    {shortenAddress(invoice.payer)}
-                  </a>
+                  <span className="text-slate-500">Merchant Address</span>
+                  <span className="font-mono text-sm">{shortenAddress(paymentLog.args.merchant)}</span>
                 </div>
+              )}
 
+              {paymentLog.args?.payer && (
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Paid At</span>
-                  <span>{formatDate(invoice.paidAt)}</span>
+                  <span className="text-slate-500">Payer Address</span>
+                  <span className="font-mono text-sm">{shortenAddress(paymentLog.args.payer)}</span>
                 </div>
-
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Token</span>
-                  <a
-                    href={`${explorerUrl}/address/${invoice.token}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono text-sm text-blue-600 hover:underline"
-                  >
-                    {shortenAddress(invoice.token)}
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
-
-            {paymentLog && (
-              <Card className="mt-6">
-                <CardHeader>
-                  <CardTitle>Payment Transaction</CardTitle>
-                  <CardDescription>
-                    Decoded InvoicePaid event
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Transaction Hash</span>
-                    <a
-                      href={`${explorerUrl}/tx/${paymentLog.transactionHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-sm text-blue-600 hover:underline"
-                    >
-                      {shortenAddress(paymentLog.transactionHash)}
-                    </a>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Block Number</span>
-                    <span className="font-mono text-sm">{paymentLog.blockNumber.toString()}</span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Merchant (from event)</span>
-                    <a
-                      href={`${explorerUrl}/address/${paymentLog.args?.merchant}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-sm text-blue-600 hover:underline"
-                    >
-                      {shortenAddress(paymentLog.args?.merchant || '')}
-                    </a>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Payer (from event)</span>
-                    <a
-                      href={`${explorerUrl}/address/${paymentLog.args?.payer}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-sm text-blue-600 hover:underline"
-                    >
-                      {shortenAddress(paymentLog.args?.payer || '')}
-                    </a>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Amount (from event)</span>
-                    <span className="font-semibold">{formatUSDC(paymentLog.args?.amount || 0n)} USDC</span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Timestamp (from event)</span>
-                    <span>{formatDate(paymentLog.args?.paidAt || 0)}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <Alert className="mt-6">
-              <AlertTitle>Verification</AlertTitle>
-              <AlertDescription>
-                This receipt is verifiable on-chain. You can verify it by:
-                <ol className="mt-2 list-inside list-decimal space-y-1 text-sm">
-                  <li>Checking the transaction hash on the block explorer</li>
-                  <li>Calling getInvoice() on the contract to confirm payment state</li>
-                  <li>Verifying the decoded event matches the invoice details</li>
-                </ol>
-              </AlertDescription>
-            </Alert>
-          </>
-        ) : (
-          <Alert className="mt-6">
-            <AlertTitle>Invoice Not Paid</AlertTitle>
-            <AlertDescription>
-              This invoice has not been paid yet. Visit the payment page to complete the transaction.
-            </AlertDescription>
-          </Alert>
+              )}
+            </CardContent>
+          </Card>
         )}
+
+        <div className="mt-6 space-y-2">
+          <h2 className="text-lg font-semibold">Verify This Payment</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            To verify this payment independently, you can:
+          </p>
+          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-slate-600 dark:text-slate-400">
+            <li>Visit the Avalanche explorer at {explorerUrl}</li>
+            <li>Search for the transaction hash</li>
+            <li>Review the InvoicePaid event</li>
+            <li>Confirm the invoice amount matches</li>
+          </ul>
+        </div>
+
+        <div className="mt-6">
+          <Link href={`/pay/${invoiceId}`}>
+            <Button className="w-full" variant="outline">
+              Back to Invoice
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   )

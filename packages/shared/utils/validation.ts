@@ -190,6 +190,24 @@ export function uuidToBytes32(uuid: string): string {
 
 /**
  * Generates a random UUID
+ *
+ * @warning This function uses Math.random() which is NOT cryptographically secure.
+ * Use this only for:
+ * - Test data generation
+ * - Non-critical identifiers
+ * - Where uniqueness is the only requirement
+ *
+ * For security-critical use cases (invoice IDs, payments, etc.),
+ * use the `uuid` package instead:
+ *
+ * @example
+ * import { v4 as uuidv4 } from 'uuid'
+ * const secureUuid = uuidv4()
+ *
+ * This function is maintained for:
+ * - Backward compatibility
+ * - Internal tooling and testing
+ * - Non-production scenarios
  */
 export function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {

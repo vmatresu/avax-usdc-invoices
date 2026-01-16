@@ -10,7 +10,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert'
 import { invoiceManagerAddress, usdcAddress } from '@/lib/wagmi'
 import { INVOICE_MANAGER_ABI } from '@/lib/contracts'
 import { v4 as uuidv4 } from 'uuid'
-import { ethers } from 'ethers'
+import { parseUnits } from 'viem'
+import { logger } from '@avalanche-bridge/shared'
 import { formatUSDC, formatDate, shortenAddress, uuidToBytes32 } from '@/lib/utils'
 
 interface Invoice {
@@ -52,7 +53,7 @@ export default function MerchantPage() {
     if (!validateEnvironment()) return
     if (!address) return
 
-    const amountInWei = ethers.parseUnits(amount, 6)
+    const amountInWei = parseUnits(amount, 6)
     const dueAtTimestamp = dueDate ? Math.floor(new Date(dueDate).getTime() / 1000) : 0
     const uuid = uuidv4()
     const invoiceId = uuidToBytes32(uuid)
@@ -66,7 +67,7 @@ export default function MerchantPage() {
         args: [invoiceId as `0x${string}`, usdcAddress, amountInWei, dueAtTimestamp],
       })
 
-      // Store the UUID locally for display
+      // Store invoice locally for display
       const newInvoice = {
         invoiceId,
         uuid,
@@ -75,12 +76,12 @@ export default function MerchantPage() {
         amount: amountInWei,
         dueAt: dueAtTimestamp,
         paid: false,
-        payer: '0x0000000000000000000000000000000000000000',
+        payer: '0x0000000000000000000000000000000000000000000',
         paidAt: 0,
       }
       setInvoices([newInvoice, ...invoices])
     } catch (err) {
-      console.error('Error creating invoice:', err)
+      logger.error('Error creating invoice', err as Error, { amount, dueDate })
       setError('Failed to create invoice. Please try again.')
     } finally {
       setLoading(false)
@@ -98,7 +99,7 @@ export default function MerchantPage() {
         setInvoices(data.invoices || [])
       }
     } catch (err) {
-      console.error('Error loading invoices:', err)
+      logger.error('Error loading invoices', err as Error, { address })
     } finally {
       setLoading(false)
     }
