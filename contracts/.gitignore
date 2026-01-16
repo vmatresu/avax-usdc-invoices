@@ -1,0 +1,21 @@
+# Environment variables
+.env
+
+# Foundry
+cache/
+out/
+
+# Deployment
+broadcast/
+!/.forge-snapshots/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Node
+node_modules/

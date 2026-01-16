@@ -1,0 +1,13 @@
+{
+  "name": "@avax-usdc-invoices/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test -vv",
+    "test:coverage": "forge coverage",
+    "deploy:fuji": "source .env.fuji && forge script script/Deploy.s.sol:DeployFuji --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --verify",
+    "deploy:mainnet": "source .env.mainnet && forge script script/Deploy.s.sol:DeployMainnet --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --verify",
+    "generate-deployment-info": "node script/generate-deployment-info.js"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "avax-usdc-invoices",
+  "version": "1.0.0",
+  "private": true,
+  "description": "On-chain invoice system for Avalanche C-Chain using native USDC",
+  "scripts": {
+    "install": "pnpm install",
+    "dev": "pnpm --filter web dev",
+    "test": "pnpm --filter contracts test",
+    "deploy:fuji": "pnpm --filter contracts deploy:fuji",
+    "deploy:mainnet": "pnpm --filter contracts deploy:mainnet"
+  },
+  "keywords": [
+    "avalanche",
+    "usdc",
+    "invoice",
+    "payments",
+    "web3"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

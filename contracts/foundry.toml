@@ -1,0 +1,22 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.23"
+optimizer = true
+optimizer_runs = 200
+verbosity = 3
+
+[rpc_endpoints]
+fuji = "${RPC_URL}"
+mainnet = "${RPC_URL}"
+
+[fmt]
+bracket_spacing = true
+int_types = "long"
+line_length = 120
+multiline_func_header = "all"
+number_underscore = "thousands"
+quote_style = "double"
+tab_width = 4
+wrap_comments = true
