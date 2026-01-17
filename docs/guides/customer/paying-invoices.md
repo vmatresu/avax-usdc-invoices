@@ -632,7 +632,7 @@ await invoiceManager.payInvoice(invoiceId);
 
 - [InvoiceManager Contract Documentation](../../contracts/invoice-manager.md)
 - [System Architecture](../../architecture/overview.md)
-- [API Documentation](../../api/overview.md)
+
 - [Merchant Guide - Creating Invoices](../merchant/creating-invoices.md)
 
 ---

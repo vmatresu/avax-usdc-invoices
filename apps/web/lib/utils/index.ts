@@ -12,7 +12,7 @@ import {
   shortenTxHash,
   uuidToBytes32,
   generateUUID,
-} from '@avalanche-bridge/shared';
+} from '@avax-usdc-invoices/shared';
 
 /**
  * Combines class names with tailwind-merge

@@ -2,6 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@avalanche-bridge/shared'],
-}
+};
 
-export default nextConfig
+export default nextConfig;

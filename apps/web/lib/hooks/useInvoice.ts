@@ -5,14 +5,10 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useAccount } from 'wagmi';
-import type { Invoice } from '@avalanche-bridge/shared';
-import {
-  logger,
-  InvoiceStatus,
-  isInvoiceExpired,
-} from '@avalanche-bridge/shared';
+import { useCallback, useEffect, useState } from 'react';
+
+import type { Invoice } from '@avax-usdc-invoices/shared';
+import { InvoiceStatus, isInvoiceExpired, logger } from '@avax-usdc-invoices/shared';
 import { InvoiceRepository } from '../services/InvoiceRepository';
 import { getErrorMessage } from './useError';
 
@@ -71,9 +67,12 @@ export function useInvoice(invoiceId: string): UseInvoiceReturn {
 /**
  * Hook for fetching merchant invoices
  */
-export function useMerchantInvoices(
-  merchantAddress: string | undefined
-): { invoices: Invoice[]; isLoading: boolean; error: string | null; refetch: () => Promise<void> } {
+export function useMerchantInvoices(merchantAddress: string | undefined): {
+  invoices: Invoice[];
+  isLoading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+} {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,11 +92,7 @@ export function useMerchantInvoices(
     } catch (err) {
       const errorMessage = getErrorMessage(err);
       setError(errorMessage);
-      logger.error(
-        'Failed to fetch merchant invoices',
-        err as Error,
-        { merchantAddress }
-      );
+      logger.error('Failed to fetch merchant invoices', err as Error, { merchantAddress });
     } finally {
       setIsLoading(false);
     }

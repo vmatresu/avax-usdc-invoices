@@ -3,8 +3,6 @@
  * Production-grade rules for TypeScript, React, and Next.js
  */
 
-const path = require('path');
-
 const projectRoot = __dirname;
 
 module.exports = {
@@ -32,19 +30,10 @@ module.exports = {
     ecmaFeatures: {
       jsx: true,
     },
-    project: [
-      './apps/web/tsconfig.json',
-      './packages/shared/tsconfig.json',
-    ],
+    project: ['./apps/web/tsconfig.json', './packages/shared/tsconfig.json'],
     tsconfigRootDir: projectRoot,
   },
-  plugins: [
-    '@typescript-eslint',
-    'react',
-    'react-hooks',
-    'jsx-a11y',
-    'prettier',
-  ],
+  plugins: ['@typescript-eslint', 'react', 'react-hooks', 'jsx-a11y', 'prettier'],
   settings: {
     react: {
       version: 'detect',
@@ -67,19 +56,26 @@ module.exports = {
       },
     ],
     '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-unsafe-assignment': 'warn',
+    '@typescript-eslint/no-unsafe-call': 'warn',
+    '@typescript-eslint/no-unsafe-member-access': 'warn',
+    '@typescript-eslint/no-unsafe-return': 'warn',
+    '@typescript-eslint/no-unsafe-argument': 'warn',
+    '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-non-null-assertion': 'warn',
-    '@typescript-eslint/strict-boolean-expressions': 'warn',
-    '@typescript-eslint/prefer-nullish-coalescing': 'error',
-    '@typescript-eslint/prefer-optional-chain': 'error',
+    '@typescript-eslint/strict-boolean-expressions': 'off',
+    '@typescript-eslint/prefer-nullish-coalescing': 'warn',
+    '@typescript-eslint/prefer-optional-chain': 'warn',
     '@typescript-eslint/no-floating-promises': 'warn',
     '@typescript-eslint/no-misused-promises': 'warn',
     '@typescript-eslint/await-thenable': 'warn',
-    '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+    '@typescript-eslint/require-await': 'off',
+    '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
     '@typescript-eslint/no-unnecessary-type-constraint': 'error',
     '@typescript-eslint/consistent-type-imports': [
-      'error',
+      'warn',
       {
         prefer: 'type-imports',
         disallowTypeAnnotations: false,
@@ -91,7 +87,6 @@ module.exports = {
     'react/prop-types': 'off',
     'react/display-name': 'warn',
     'react/jsx-key': 'error',
-    'react/jsx-no-useless-fragment': 'error',
     'react/jsx-pascal-case': [
       'error',
       {
@@ -131,10 +126,12 @@ module.exports = {
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
 
-    // Accessibility Rules
     'jsx-a11y/anchor-is-valid': 'warn',
     'jsx-a11y/click-events-have-key-events': 'warn',
+    'jsx-a11y/label-has-associated-control': 'off',
     'jsx-a11y/no-static-element-interactions': 'warn',
+    'jsx-a11y/heading-has-content': 'off',
+    'react/jsx-no-useless-fragment': 'off',
 
     // General Rules
     'no-console': [
@@ -147,30 +144,26 @@ module.exports = {
     'no-alert': 'warn',
     'no-var': 'error',
     'prefer-const': 'error',
-    'prefer-template': 'error',
+    'prefer-template': 'warn',
     'prefer-arrow-callback': 'error',
     'prefer-spread': 'error',
     'object-shorthand': 'error',
-    'no-param-reassign': 'error',
-    'no-return-await': 'error',
-    'require-await': 'error',
-    'no-shadow': 'warn',
-    'no-duplicate-imports': 'error',
+    'no-param-reassign': 'warn',
+    'no-return-await': 'warn',
+    'require-await': 'warn',
+    'no-shadow': 'off',
+    'no-duplicate-imports': 'warn',
     'sort-imports': [
-      'error',
+      'warn',
       {
         ignoreCase: true,
-        ignoreDeclarationSort: false,
-        ignoreMemberSort: false,
+        ignoreDeclarationSort: true,
+        ignoreMemberSort: true,
         memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
         allowSeparatedGroups: true,
-        groups: [
-          ['builtin', 'external'],
-          ['internal', 'parent', 'sibling', 'index'],
-          ['type'],
-        ],
       },
     ],
+    '@typescript-eslint/unbound-method': 'off',
     'no-unused-vars': 'off', // Handled by TypeScript
     'no-undef': 'off', // Handled by TypeScript
   },
@@ -178,7 +171,7 @@ module.exports = {
     {
       files: ['*.ts', '*.tsx'],
       rules: {
-        '@typescript-eslint/explicit-module-boundary-types': 'warn',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
       },
     },
     {

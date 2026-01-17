@@ -3,12 +3,10 @@
  * Single Responsibility: Provides contract ABI definitions
  */
 
-import { parseAbi } from 'viem';
-
 /**
  * InvoiceManager contract ABI
  */
-export const INVOICE_MANAGER_ABI = parseAbi([
+export const INVOICE_MANAGER_ABI = [
   {
     type: 'function',
     name: 'createInvoice',
@@ -80,12 +78,12 @@ export const INVOICE_MANAGER_ABI = parseAbi([
       { name: 'paidAt', type: 'uint64', indexed: false },
     ],
   },
-] as const);
+] as const;
 
 /**
  * USDC contract ABI (ERC20 subset)
  */
-export const USDC_ABI = parseAbi([
+export const USDC_ABI = [
   {
     type: 'function',
     name: 'approve',
@@ -134,4 +132,4 @@ export const USDC_ABI = parseAbi([
     inputs: [],
     outputs: [{ name: '', type: 'string' }],
   },
-] as const);
+] as const;

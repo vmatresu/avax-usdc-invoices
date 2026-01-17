@@ -14,7 +14,7 @@ import {
   type AppError,
   WalletNotConnectedError,
   WrongNetworkError,
-} from '@avalanche-bridge/shared';
+} from '@avax-usdc-invoices/shared';
 import { useAccount } from 'wagmi';
 import { NetworkConfigService } from '../config/network';
 
@@ -60,10 +60,7 @@ export function useError() {
    * Wraps async functions with error handling
    */
   const withErrorHandling = useCallback(
-    async <T>(
-      fn: () => Promise<T>,
-      onError?: (error: string) => void
-    ): Promise<T | null> => {
+    async <T>(fn: () => Promise<T>, onError?: (error: string) => void): Promise<T | null> => {
       try {
         validateWallet();
         return await fn();

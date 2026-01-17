@@ -84,9 +84,4 @@ export type {
 } from './interfaces';
 
 // Logger
-export {
-  ConsoleLogger,
-  NoOpLogger,
-  LogLevel,
-  logger,
-} from './logger';
+export { ConsoleLogger, NoOpLogger, LogLevel, logger } from './logger';

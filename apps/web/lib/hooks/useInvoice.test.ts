@@ -3,9 +3,10 @@
  * Tests invoice fetching, merchant invoices, and status derivation
  */
 
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { InvoiceStatus } from '@avax-usdc-invoices/shared';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { InvoiceRepository } from '../services/InvoiceRepository';
 import { useInvoice, useMerchantInvoices } from './useInvoice';
-import { InvoiceStatus } from '@avalanche-bridge/shared';
 
 // Mock InvoiceRepository
 jest.mock('../services/InvoiceRepository', () => ({
@@ -18,8 +19,8 @@ jest.mock('../services/InvoiceRepository', () => ({
 }));
 
 // Mock logger
-jest.mock('@avalanche-bridge/shared', () => ({
-  ...jest.requireActual('@avalanche-bridge/shared'),
+jest.mock('@avax-usdc-invoices/shared', () => ({
+  ...jest.requireActual('@avax-usdc-invoices/shared'),
   logger: {
     debug: jest.fn(),
     info: jest.fn(),
@@ -40,7 +41,6 @@ describe('useInvoice', () => {
     paidAt: 0,
   };
 
-  const { InvoiceRepository } = require('../services/InvoiceRepository');
   const repository = InvoiceRepository.getInstance();
 
   beforeEach(() => {

@@ -1,3 +1,4 @@
+/* global jest */
 /**
  * Jest setup file
  * Runs before all tests

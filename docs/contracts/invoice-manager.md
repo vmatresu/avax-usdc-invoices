@@ -787,7 +787,7 @@ The contract is designed for:
 ---
 
 **Related Documentation**:
-- [Contract Functions](./invoice-manager-functions.md)
-- [Contract Events](./invoice-manager-events.md)
-- [Contract Security](./invoice-manager-security.md)
-- [Testing](./testing.md)
+- [Contract Functions](#functions)
+- [Contract Events](#events)
+- [Contract Security](#security-considerations)
+- [Testing](../development/testing.md)

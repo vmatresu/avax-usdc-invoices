@@ -3,8 +3,8 @@
  * Single Responsibility: Manages network settings
  */
 
-import { NETWORKS, USDC_ADDRESSES, type NetworkConfig } from '@avalanche-bridge/shared';
-import type { INetworkConfig } from '@avalanche-bridge/shared';
+import { NETWORKS, USDC_ADDRESSES, type NetworkConfig } from '@avax-usdc-invoices/shared';
+import type { INetworkConfig } from '@avax-usdc-invoices/shared';
 
 export class NetworkConfigService implements INetworkConfig {
   private static instance: NetworkConfigService;

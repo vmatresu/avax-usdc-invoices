@@ -435,7 +435,7 @@ After successful Fuji deployment:
 2. **Get Testnet Users**: Have friends/colleagues test payment flow
 3. **Monitor Gas**: Track gas usage and optimize if needed
 4. **Prepare for Mainnet**: Document Fuji deployment process
-5. **Plan Mainnet Deployment**: See [Mainnet Deployment Guide](./mainnet.md)
+5. **Plan Mainnet Deployment**: (Mainnet guide coming soon)
 
 ## Mainnet Migration
 
@@ -443,7 +443,7 @@ When ready for mainnet:
 
 1. **Audit Contract**: Get professional security audit
 2. **Test on Fuji**: Run comprehensive tests
-3. **Deploy to Mainnet**: Follow [Mainnet Deployment Guide](./mainnet.md)
+3. **Deploy to Mainnet**: Deploy the same contracts to Avalanche C-Chain Mainnet
 4. **Verify on Mainnet**: Check contract on [Snowtrace](https://snowtrace.io/)
 5. **Monitor Transactions**: Watch for issues
 6. **Provide Support**: Help users with migration
@@ -460,7 +460,7 @@ When ready for mainnet:
 
 If you encounter issues:
 
-1. Check [Troubleshooting](./troubleshooting) section
+1. Check [Troubleshooting](#troubleshooting) section
 2. Review [Architecture Documentation](../architecture/overview.md)
 3. Check [Contract Documentation](../contracts/invoice-manager.md)
 4. Search [GitHub Issues](https://github.com/your-org/avax-usdc-invoices/issues)
@@ -468,8 +468,4 @@ If you encounter issues:
 
 ---
 
-**Related Documentation**:
-- [Mainnet Deployment](./mainnet.md)
-- [Contract Deployment](./contract-deployment.md)
-- [Environment Variables](./environment-variables.md)
-- [Troubleshooting](../troubleshooting/wallet.md)
+- [Contract Deployment](./fuji.md)

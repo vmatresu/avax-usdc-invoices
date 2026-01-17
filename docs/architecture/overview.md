@@ -370,10 +370,4 @@ The Avalanche USDC Invoices system is designed with:
 
 This architecture ensures the system is maintainable, scalable, and ready for production use.
 
----
 
-**Related Documentation**:
-- [Layered Architecture](./layers.md)
-- [SOLID Principles](./solid.md)
-- [Design Patterns](./patterns.md)
-- [Data Flow](./data-flow.md)

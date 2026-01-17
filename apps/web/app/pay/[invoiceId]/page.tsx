@@ -1,106 +1,119 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useReadContracts } from 'wagmi'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert'
-import { invoiceManagerAddress, usdcAddress, publicClient } from '@/lib/wagmi'
-import { INVOICE_MANAGER_ABI, USDC_ABI, getInvoicePaidLog } from '@/lib/contracts'
-import { parseUnits } from 'viem'
-import { logger } from '@avalanche-bridge/shared'
-import { formatUSDC, formatDate, shortenAddress } from '@/lib/utils'
-import Link from 'next/link'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { INVOICE_MANAGER_ABI, USDC_ABI, getInvoicePaidLog } from '@/lib/contracts';
+import { formatDate, formatUSDC, shortenAddress } from '@/lib/utils';
+import { invoiceManagerAddress, usdcAddress } from '@/lib/wagmi';
+import { logger } from '@avax-usdc-invoices/shared';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { parseUnits } from 'viem';
+import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
 interface InvoiceData {
-  merchant: string
-  token: string
-  amount: bigint
-  dueAt: number
-  paid: boolean
-  payer: string
-  paidAt: number
+  merchant: string;
+  token: string;
+  amount: bigint;
+  dueAt: number;
+  paid: boolean;
+  payer: string;
+  paidAt: number;
 }
 
 interface PaymentLog {
-  transactionHash: string
-  blockNumber: bigint
+  transactionHash: string;
+  blockNumber: bigint;
   args?: {
-    invoiceId: string
-    merchant: string
-    payer: string
-    token: string
-    amount: bigint
-    paidAt: number
-  }
+    invoiceId: string;
+    merchant: string;
+    payer: string;
+    token: string;
+    amount: bigint;
+    paidAt: bigint;
+  };
 }
 
 export default function PayInvoicePage({ params }: { params: { invoiceId: string } }) {
-  const { address, isConnected } = useAccount()
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [approvalAmount, setApprovalAmount] = useState('')
-  const [paymentLog, setPaymentLog] = useState<PaymentLog | null>(null)
+  const { address, isConnected } = useAccount();
+  const [error, setError] = useState('');
+  const [loading, _setLoading] = useState(false);
+  const [approvalAmount, setApprovalAmount] = useState('');
+  const [paymentLog, setPaymentLog] = useState<PaymentLog | null>(null);
 
-  const invoiceId = params.invoiceId as `0x${string}`
+  const invoiceId = params.invoiceId as `0x${string}`;
 
   const { data: invoice, isLoading: invoiceLoading } = useReadContract({
     address: invoiceManagerAddress,
     abi: INVOICE_MANAGER_ABI,
     functionName: 'getInvoice',
     args: [invoiceId],
-  }) as { data: InvoiceData | undefined; isLoading: boolean }
+  }) as { data: InvoiceData | undefined; isLoading: boolean };
 
   const { data: allowance } = useReadContract({
     address: usdcAddress,
     abi: USDC_ABI,
     functionName: 'allowance',
     args: [address || '0x0000000000000000000000000000000000000000000', invoiceManagerAddress],
-    enabled: !!address && !!invoiceManagerAddress && !!usdcAddress,
-  })
+    query: {
+      enabled: !!address && !!invoiceManagerAddress && !!usdcAddress,
+    },
+  }) as { data: bigint | undefined };
 
   const { data: balance } = useReadContract({
     address: usdcAddress,
     abi: USDC_ABI,
     functionName: 'balanceOf',
     args: [address || '0x0000000000000000000000000000000000000000000'],
-    enabled: !!address && !!usdcAddress,
-  })
+    query: {
+      enabled: !!address && !!usdcAddress,
+    },
+  }) as { data: bigint | undefined };
 
-  const { writeContract: approveUSDC, data: approveHash, isPending: approvePending } = useWriteContract()
-  const { writeContract: payInvoice, data: payHash, isPending: payPending, error: payError } = useWriteContract()
+  const {
+    writeContract: approveUSDC,
+    data: approveHash,
+    isPending: approvePending,
+  } = useWriteContract();
+  const {
+    writeContract: payInvoice,
+    data: payHash,
+    isPending: payPending,
+    error: payError,
+  } = useWriteContract();
 
-  const { isLoading: isApproving } = useWaitForTransactionReceipt({ hash: approveHash })
-  const { isLoading: isPaying } = useWaitForTransactionReceipt({ hash: payHash })
+  const { isLoading: isApproving } = useWaitForTransactionReceipt({ hash: approveHash });
+  const { isLoading: isPaying } = useWaitForTransactionReceipt({ hash: payHash });
 
-  const isExpired = invoice && invoice.dueAt > 0 && invoice.dueAt < Math.floor(Date.now() / 1000)
+  const isExpired = invoice && invoice.dueAt > 0 && invoice.dueAt < Math.floor(Date.now() / 1000);
 
   useEffect(() => {
     if (invoice && invoice.paid) {
-      loadPaymentLog()
+      loadPaymentLog();
     }
-  }, [invoice, invoice?.paid])
+  }, [invoice, invoice?.paid]);
 
   const loadPaymentLog = async () => {
-    if (!invoiceId || !invoiceManagerAddress) return
+    if (!invoiceId || !invoiceManagerAddress) return;
 
     try {
-      const log = await getInvoicePaidLog(invoiceId, invoiceManagerAddress)
+      const log = await getInvoicePaidLog(invoiceId, invoiceManagerAddress);
       if (log) {
-        setPaymentLog(log as PaymentLog)
+        setPaymentLog(log as unknown as PaymentLog);
       }
     } catch (err) {
-      logger.error('Error loading payment log', err as Error, { invoiceId })
+      logger.error('Error loading payment log', err as Error, { invoiceId });
     }
-  }
+  };
 
   const handleApprove = async () => {
-    setError('')
-    if (!address || !invoice) return
+    setError('');
+    if (!address || !invoice) return;
 
-    const amount = approvalAmount || (invoice.amount / 10n ** 6n).toString()
-    const amountInWei = parseUnits(amount, 6)
+    const amount = approvalAmount || (invoice.amount / 10n ** 6n).toString();
+    const amountInWei = parseUnits(amount, 6);
 
     try {
       approveUSDC({
@@ -108,16 +121,16 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
         abi: USDC_ABI,
         functionName: 'approve',
         args: [invoiceManagerAddress, amountInWei],
-      })
+      });
     } catch (err) {
-      logger.error('Error approving USDC', err as Error, { amount })
-      setError('Failed to approve USDC. Please try again.')
+      logger.error('Error approving USDC', err as Error, { amount });
+      setError('Failed to approve USDC. Please try again.');
     }
-  }
+  };
 
   const handlePay = async () => {
-    setError('')
-    if (!address) return
+    setError('');
+    if (!address) return;
 
     try {
       payInvoice({
@@ -125,12 +138,12 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
         abi: INVOICE_MANAGER_ABI,
         functionName: 'payInvoice',
         args: [invoiceId],
-      })
+      });
     } catch (err) {
-      logger.error('Error paying invoice', err as Error, { invoiceId })
-      setError('Failed to pay invoice. Please try again.')
+      logger.error('Error paying invoice', err as Error, { invoiceId });
+      setError('Failed to pay invoice. Please try again.');
     }
-  }
+  };
 
   if (invoiceLoading) {
     return (
@@ -141,7 +154,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (!invoice) {
@@ -156,7 +169,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
           </Alert>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -234,9 +247,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
             {!isConnected ? (
               <Alert className="mt-6">
                 <AlertTitle>Connect Wallet</AlertTitle>
-                <AlertDescription>
-                  Please connect your wallet to pay this invoice
-                </AlertDescription>
+                <AlertDescription>Please connect your wallet to pay this invoice</AlertDescription>
               </Alert>
             ) : (
               <>
@@ -244,7 +255,8 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
                   <Alert variant="destructive" className="mt-6">
                     <AlertTitle>Insufficient Balance</AlertTitle>
                     <AlertDescription>
-                      You have {formatUSDC(balance)} USDC but need {formatUSDC(invoice.amount)} USDC.
+                      You have {formatUSDC(balance)} USDC but need {formatUSDC(invoice.amount)}{' '}
+                      USDC.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -252,9 +264,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
                 <Card className="mt-6">
                   <CardHeader>
                     <CardTitle>Payment Steps</CardTitle>
-                    <CardDescription>
-                      Complete both steps to pay the invoice
-                    </CardDescription>
+                    <CardDescription>Complete both steps to pay the invoice</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div>
@@ -297,7 +307,13 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
                         </div>
                         <Button
                           onClick={handlePay}
-                          disabled={!allowance || allowance < invoice.amount || payPending || isPaying || loading}
+                          disabled={
+                            !allowance ||
+                            allowance < invoice.amount ||
+                            payPending ||
+                            isPaying ||
+                            loading
+                          }
                           className="w-full"
                         >
                           {payPending || isPaying ? 'Paying...' : 'Pay Invoice'}
@@ -313,9 +329,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
 
                     {payError && (
                       <Alert variant="destructive">
-                        <AlertDescription>
-                          {(payError as Error).message}
-                        </AlertDescription>
+                        <AlertDescription>{(payError as Error).message}</AlertDescription>
                       </Alert>
                     )}
                   </CardContent>
@@ -329,9 +343,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
           <Card className="mt-6">
             <CardHeader>
               <CardTitle>Receipt</CardTitle>
-              <CardDescription>
-                Verifiable payment information
-              </CardDescription>
+              <CardDescription>Verifiable payment information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between">
@@ -353,12 +365,14 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
 
               <div className="flex justify-between">
                 <span className="text-slate-500">Amount Paid</span>
-                <span className="font-semibold">{formatUSDC(paymentLog.args?.amount || 0n)} USDC</span>
+                <span className="font-semibold">
+                  {formatUSDC(paymentLog.args?.amount || 0n)} USDC
+                </span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-slate-500">Payment Timestamp</span>
-                <span>{formatDate(paymentLog.args?.paidAt || 0)}</span>
+                <span>{formatDate(Number(paymentLog.args?.paidAt || 0n))}</span>
               </div>
 
               <Link href={`/receipt/${invoiceId}`}>
@@ -371,5 +385,5 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
         )}
       </div>
     </div>
-  )
+  );
 }

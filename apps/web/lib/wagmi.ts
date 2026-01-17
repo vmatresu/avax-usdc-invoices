@@ -3,8 +3,9 @@
  * Single Responsibility: Manages wagmi client setup
  */
 
+import { createPublicClient, http as viemHttp } from 'viem';
 import { createConfig, http } from 'wagmi';
-import { avalancheFuji, avalanche } from 'wagmi/chains';
+import { avalanche, avalancheFuji } from 'wagmi/chains';
 import { NetworkConfigService } from './config/network';
 
 const networkConfig = NetworkConfigService.getInstance();
@@ -13,15 +14,23 @@ const chainId = networkConfig.getChainId();
 export const config = createConfig({
   chains: chainId === 43114 ? [avalanche] : [avalancheFuji],
   transports: {
-    [chainId === 43114 ? avalanche.id : avalancheFuji.id]: http(
-      networkConfig.getRpcUrl()
+    [avalanche.id]: http(
+      chainId === 43114 ? networkConfig.getRpcUrl() : 'https://api.avax.network/ext/bc/C/rpc'
+    ),
+    [avalancheFuji.id]: http(
+      chainId === 43113 ? networkConfig.getRpcUrl() : 'https://api.avax-test.network/ext/bc/C/rpc'
     ),
   },
 });
 
 export const chainIdNumber = chainId;
 
-// Export public client for use in services
-export const publicClient = config.getClient({
-  chainId: chainId === 43114 ? avalanche.id : avalancheFuji.id,
+// Export public client for use in services - using viem's createPublicClient for full actions
+export const publicClient = createPublicClient({
+  chain: chainId === 43114 ? avalanche : avalancheFuji,
+  transport: viemHttp(networkConfig.getRpcUrl()),
 });
+
+// Export contract addresses for use in pages and API routes
+export const invoiceManagerAddress = networkConfig.getInvoiceManagerAddress() as `0x${string}`;
+export const usdcAddress = networkConfig.getUSDCAddress() as `0x${string}`;

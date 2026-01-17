@@ -390,7 +390,7 @@ For multiple invoices:
 
 - [InvoiceManager Contract Documentation](../../contracts/invoice-manager.md)
 - [System Architecture](../../architecture/overview.md)
-- [API Documentation](../../api/overview.md)
+
 - [Customer Guide - Paying Invoices](../customer/paying-invoices.md)
 
 ---

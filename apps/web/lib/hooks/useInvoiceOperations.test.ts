@@ -3,9 +3,10 @@
  * Tests invoice creation, payment, and USDC approval
  */
 
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { GAS_LIMITS } from '@avax-usdc-invoices/shared';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 import { useInvoiceOperations } from './useInvoiceOperations';
-import { GAS_LIMITS } from '@avalanche-bridge/shared';
 
 // Mock wagmi hooks
 jest.mock('wagmi', () => ({
@@ -24,8 +25,8 @@ jest.mock('../config/network', () => ({
 }));
 
 // Mock logger
-jest.mock('@avalanche-bridge/shared', () => ({
-  ...jest.requireActual('@avalanche-bridge/shared'),
+jest.mock('@avax-usdc-invoices/shared', () => ({
+  ...jest.requireActual('@avax-usdc-invoices/shared'),
   logger: {
     info: jest.fn(),
     error: jest.fn(),
@@ -34,9 +35,8 @@ jest.mock('@avalanche-bridge/shared', () => ({
 }));
 
 describe('useInvoiceOperations', () => {
-  const { useWriteContract, useWaitForTransactionReceipt } = require('wagmi');
   const mockWriteContract = jest.fn();
-  const mockWaitForTransactionReceipt = jest.fn();
+  const _mockWaitForTransactionReceipt = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -297,7 +297,7 @@ describe('useInvoiceOperations', () => {
 
   describe('state management', () => {
     it('should combine loading states from wagmi hooks', async () => {
-      useWriteContract.mockReturnValue({
+      (useWriteContract as jest.Mock).mockReturnValue({
         writeContract: mockWriteContract,
         isPending: true,
         error: null,

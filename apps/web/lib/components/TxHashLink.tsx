@@ -15,12 +15,7 @@ interface TxHashLinkProps {
   text?: string;
 }
 
-export function TxHashLink({
-  hash,
-  shorten = true,
-  className,
-  text,
-}: TxHashLinkProps) {
+export function TxHashLink({ hash, shorten = true, className, text }: TxHashLinkProps) {
   const explorerUrl = process.env.NEXT_PUBLIC_EXPLORER_BASE_URL;
 
   if (!explorerUrl) {

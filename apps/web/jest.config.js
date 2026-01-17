@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /**
  * Jest configuration for web app
  */
@@ -33,16 +34,8 @@ const customJestConfig = {
       statements: 70,
     },
   },
-  testMatch: [
-    '**/*.test.ts',
-    '**/*.test.tsx',
-    '**/*.spec.ts',
-    '**/*.spec.tsx',
-  ],
-  transformIgnorePatterns: [
-    '/node_modules/',
-    '^.+\\.module\\.(css|sass|scss)$',
-  ],
+  testMatch: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
+  transformIgnorePatterns: ['/node_modules/', '^.+\\.module\\.(css|sass|scss)$'],
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

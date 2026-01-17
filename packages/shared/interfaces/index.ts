@@ -84,10 +84,7 @@ export interface ITransactionMonitor {
   /**
    * Estimates gas for transaction
    */
-  estimateGas(
-    functionName: string,
-    args: unknown[]
-  ): Promise<bigint>;
+  estimateGas(functionName: string, args: unknown[]): Promise<bigint>;
 }
 
 /**

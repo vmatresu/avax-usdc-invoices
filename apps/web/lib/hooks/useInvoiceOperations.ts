@@ -5,13 +5,14 @@
 
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import type { CreateInvoiceParams, PaymentParams, InvoiceOperationState } from '@avalanche-bridge/shared';
-import {
-  logger,
-  GAS_LIMITS,
-} from '@avalanche-bridge/shared';
+import type {
+  CreateInvoiceParams,
+  InvoiceOperationState,
+  PaymentParams,
+} from '@avax-usdc-invoices/shared';
+import { GAS_LIMITS, logger } from '@avax-usdc-invoices/shared';
+import { useCallback, useEffect, useState } from 'react';
+import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 import { NetworkConfigService } from '../config/network';
 import { INVOICE_MANAGER_ABI, USDC_ABI } from '../contracts/abi';
 import { getErrorMessage } from './useError';
@@ -34,8 +35,7 @@ export function useInvoiceOperations(): UseInvoiceOperationsReturn {
     error: null,
   });
 
-  const { writeContract, data: hash, isPending, error: writeError } =
-    useWriteContract();
+  const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
 
   const { isLoading: isConfirming } = useWaitForTransactionReceipt({ hash });
 
@@ -52,13 +52,13 @@ export function useInvoiceOperations(): UseInvoiceOperationsReturn {
       updateState({ isLoading: true, error: null });
 
       try {
-        logger.info('Creating invoice via hook', params);
+        logger.info('Creating invoice via hook', { ...params });
 
         const networkConfig = NetworkConfigService.getInstance();
         const contractAddress = networkConfig.getInvoiceManagerAddress();
         const usdcAddress = networkConfig.getUSDCAddress();
 
-        const result = await writeContract({
+        writeContract({
           address: contractAddress as `0x${string}`,
           abi: INVOICE_MANAGER_ABI,
           functionName: 'createInvoice',
@@ -66,22 +66,23 @@ export function useInvoiceOperations(): UseInvoiceOperationsReturn {
             params.invoiceId as `0x${string}`,
             usdcAddress as `0x${string}`,
             params.amount,
-            params.dueAt,
+            BigInt(params.dueAt),
           ],
           gas: GAS_LIMITS.CREATE_INVOICE,
         });
 
         updateState({ isPending: true });
-        logger.info('Invoice created successfully', { ...params, hash: result });
-        return result;
+        logger.info('Invoice transaction submitted', { ...params });
+        // In wagmi v2, writeContract returns void. The hash is available via the hook's data
+        return hash ?? null;
       } catch (err) {
         const errorMessage = getErrorMessage(err);
         updateState({ isLoading: false, error: errorMessage });
-        logger.error('Failed to create invoice', err as Error, params);
+        logger.error('Failed to create invoice', err as Error, { ...params });
         return null;
       }
     },
-    [writeContract, updateState]
+    [writeContract, updateState, hash]
   );
 
   const payInvoice = useCallback(
@@ -89,12 +90,12 @@ export function useInvoiceOperations(): UseInvoiceOperationsReturn {
       updateState({ isLoading: true, error: null });
 
       try {
-        logger.info('Paying invoice via hook', params);
+        logger.info('Paying invoice via hook', { ...params });
 
         const networkConfig = NetworkConfigService.getInstance();
         const contractAddress = networkConfig.getInvoiceManagerAddress();
 
-        const result = await writeContract({
+        writeContract({
           address: contractAddress as `0x${string}`,
           abi: INVOICE_MANAGER_ABI,
           functionName: 'payInvoice',
@@ -103,16 +104,16 @@ export function useInvoiceOperations(): UseInvoiceOperationsReturn {
         });
 
         updateState({ isPending: true });
-        logger.info('Invoice paid successfully', { ...params, hash: result });
-        return result;
+        logger.info('Pay invoice transaction submitted', { ...params });
+        return hash ?? null;
       } catch (err) {
         const errorMessage = getErrorMessage(err);
         updateState({ isLoading: false, error: errorMessage });
-        logger.error('Failed to pay invoice', err as Error, params);
+        logger.error('Failed to pay invoice', err as Error, { ...params });
         return null;
       }
     },
-    [writeContract, updateState]
+    [writeContract, updateState, hash]
   );
 
   const approveUSDC = useCallback(
@@ -120,13 +121,13 @@ export function useInvoiceOperations(): UseInvoiceOperationsReturn {
       updateState({ isLoading: true, error: null });
 
       try {
-        logger.info('Approving USDC via hook', { amount });
+        logger.info('Approving USDC via hook', { amount: amount.toString() });
 
         const networkConfig = NetworkConfigService.getInstance();
         const usdcAddress = networkConfig.getUSDCAddress();
         const contractAddress = networkConfig.getInvoiceManagerAddress();
 
-        const result = await writeContract({
+        writeContract({
           address: usdcAddress as `0x${string}`,
           abi: USDC_ABI,
           functionName: 'approve',
@@ -135,16 +136,16 @@ export function useInvoiceOperations(): UseInvoiceOperationsReturn {
         });
 
         updateState({ isPending: true });
-        logger.info('USDC approved successfully', { amount, hash: result });
-        return result;
+        logger.info('USDC approval transaction submitted', { amount: amount.toString() });
+        return hash ?? null;
       } catch (err) {
         const errorMessage = getErrorMessage(err);
         updateState({ isLoading: false, error: errorMessage });
-        logger.error('Failed to approve USDC', err as Error, { amount });
+        logger.error('Failed to approve USDC', err as Error, { amount: amount.toString() });
         return null;
       }
     },
-    [writeContract, updateState]
+    [writeContract, updateState, hash]
   );
 
   // Update pending state based on wagmi hooks

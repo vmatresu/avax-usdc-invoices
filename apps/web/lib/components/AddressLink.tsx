@@ -15,12 +15,7 @@ interface AddressLinkProps {
   text?: string;
 }
 
-export function AddressLink({
-  address,
-  shorten = true,
-  className,
-  text,
-}: AddressLinkProps) {
+export function AddressLink({ address, shorten = true, className, text }: AddressLinkProps) {
   const explorerUrl = process.env.NEXT_PUBLIC_EXPLORER_BASE_URL;
 
   if (!explorerUrl) {

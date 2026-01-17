@@ -8,15 +8,11 @@ import type {
   Invoice,
   InvoiceCreatedEvent,
   InvoicePaidEvent,
-} from '@avalanche-bridge/shared';
+} from '@avax-usdc-invoices/shared';
+import { InvoiceNotFoundError, NetworkError, logger } from '@avax-usdc-invoices/shared';
 import { NetworkConfigService } from '../config/network';
-import { client } from '../wagmi';
 import { INVOICE_MANAGER_ABI } from '../contracts/abi';
-import {
-  InvoiceNotFoundError,
-  NetworkError,
-  logger,
-} from '@avalanche-bridge/shared';
+import { publicClient } from '../wagmi';
 
 export class InvoiceRepository implements IInvoiceRepository {
   private static instance: InvoiceRepository;
@@ -39,13 +35,14 @@ export class InvoiceRepository implements IInvoiceRepository {
 
       logger.debug('Fetching invoice', { invoiceId, contractAddress });
 
-      const [merchant, token, amount, dueAt, paid, payer, paidAt] =
-        await client.readContract({
+      const [merchant, token, amount, dueAt, paid, payer, paidAt] = await publicClient.readContract(
+        {
           address: contractAddress as `0x${string}`,
           abi: INVOICE_MANAGER_ABI,
           functionName: 'getInvoice',
           args: [invoiceId as `0x${string}`],
-        });
+        }
+      );
 
       logger.info('Invoice fetched successfully', {
         invoiceId,
@@ -58,10 +55,10 @@ export class InvoiceRepository implements IInvoiceRepository {
         merchant: merchant as string,
         token: token as string,
         amount: amount as bigint,
-        dueAt: dueAt as number,
+        dueAt: Number(dueAt),
         paid: paid as boolean,
         payer: payer as string,
-        paidAt: paidAt as number,
+        paidAt: Number(paidAt),
       };
     } catch (error) {
       logger.error('Failed to fetch invoice', error as Error, { invoiceId });
@@ -73,7 +70,7 @@ export class InvoiceRepository implements IInvoiceRepository {
     try {
       const contractAddress = this.networkConfig.getInvoiceManagerAddress();
 
-      const exists = await client.readContract({
+      const exists = await publicClient.readContract({
         address: contractAddress as `0x${string}`,
         abi: INVOICE_MANAGER_ABI,
         functionName: 'invoiceExists',
@@ -95,9 +92,7 @@ export class InvoiceRepository implements IInvoiceRepository {
 
       const events = await this.getInvoiceCreatedEvents(merchantAddress);
 
-      const invoices = await Promise.all(
-        events.map((event) => this.getInvoice(event.invoiceId))
-      );
+      const invoices = await Promise.all(events.map((event) => this.getInvoice(event.invoiceId)));
 
       logger.info('Merchant invoices fetched', {
         merchantAddress,
@@ -106,22 +101,16 @@ export class InvoiceRepository implements IInvoiceRepository {
 
       return invoices;
     } catch (error) {
-      logger.error(
-        'Failed to fetch merchant invoices',
-        error as Error,
-        { merchantAddress }
-      );
+      logger.error('Failed to fetch merchant invoices', error as Error, { merchantAddress });
       throw new NetworkError('Failed to fetch invoices', error);
     }
   }
 
-  async getInvoiceCreatedEvents(
-    merchantAddress: string
-  ): Promise<InvoiceCreatedEvent[]> {
+  async getInvoiceCreatedEvents(merchantAddress: string): Promise<InvoiceCreatedEvent[]> {
     try {
       const contractAddress = this.networkConfig.getInvoiceManagerAddress();
 
-      const logs = await client.getLogs({
+      const logs = await publicClient.getLogs({
         address: contractAddress as `0x${string}`,
         event: {
           type: 'event',
@@ -145,7 +134,7 @@ export class InvoiceRepository implements IInvoiceRepository {
         merchant: log.args.merchant as string,
         token: log.args.token as string,
         amount: log.args.amount as bigint,
-        dueAt: log.args.dueAt as number,
+        dueAt: Number(log.args?.dueAt ?? 0n),
         blockNumber: log.blockNumber,
         transactionHash: log.transactionHash,
       }));
@@ -157,13 +146,11 @@ export class InvoiceRepository implements IInvoiceRepository {
     }
   }
 
-  async getInvoicePaidEvent(
-    invoiceId: string
-  ): Promise<InvoicePaidEvent | null> {
+  async getInvoicePaidEvent(invoiceId: string): Promise<InvoicePaidEvent | null> {
     try {
       const contractAddress = this.networkConfig.getInvoiceManagerAddress();
 
-      const logs = await client.getLogs({
+      const logs = await publicClient.getLogs({
         address: contractAddress as `0x${string}`,
         event: {
           type: 'event',
@@ -194,7 +181,7 @@ export class InvoiceRepository implements IInvoiceRepository {
         payer: log.args.payer as string,
         token: log.args.token as string,
         amount: log.args.amount as bigint,
-        paidAt: log.args.paidAt as number,
+        paidAt: Number(log.args?.paidAt ?? 0n),
         blockNumber: log.blockNumber,
         transactionHash: log.transactionHash,
       };

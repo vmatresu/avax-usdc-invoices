@@ -1,6 +1,6 @@
-import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 
 export default function Home() {
   return (
@@ -67,5 +67,5 @@ export default function Home() {
         </div>
       </div>
     </main>
-  )
+  );
 }

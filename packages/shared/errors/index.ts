@@ -32,11 +32,10 @@ export class WalletNotConnectedError extends AppError {
 
 export class WrongNetworkError extends AppError {
   constructor(expectedChainId: number, actualChainId: number) {
-    super(
-      `Wrong network. Expected ${expectedChainId}, got ${actualChainId}`,
-      'WRONG_NETWORK',
-      { expectedChainId, actualChainId }
-    );
+    super(`Wrong network. Expected ${expectedChainId}, got ${actualChainId}`, 'WRONG_NETWORK', {
+      expectedChainId,
+      actualChainId,
+    });
   }
 }
 
@@ -84,11 +83,10 @@ export class InsufficientAllowanceError extends AppError {
 
 export class TransactionFailedError extends AppError {
   constructor(transactionHash?: string, reason?: string) {
-    super(
-      `Transaction failed${reason ? `: ${reason}` : ''}`,
-      'TRANSACTION_FAILED',
-      { transactionHash, reason }
-    );
+    super(`Transaction failed${reason ? `: ${reason}` : ''}`, 'TRANSACTION_FAILED', {
+      transactionHash,
+      reason,
+    });
   }
 }
 

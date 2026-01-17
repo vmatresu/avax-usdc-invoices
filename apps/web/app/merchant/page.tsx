@@ -1,71 +1,74 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useAccount, useWriteContract, useReadContract, useWaitForTransactionReceipt } from 'wagmi'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Label } from '@/components/ui/Label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert'
-import { invoiceManagerAddress, usdcAddress } from '@/lib/wagmi'
-import { INVOICE_MANAGER_ABI } from '@/lib/contracts'
-import { v4 as uuidv4 } from 'uuid'
-import { parseUnits } from 'viem'
-import { logger } from '@avalanche-bridge/shared'
-import { formatUSDC, formatDate, shortenAddress, uuidToBytes32 } from '@/lib/utils'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
+import { INVOICE_MANAGER_ABI } from '@/lib/contracts';
+import { formatDate, formatUSDC, shortenAddress, uuidToBytes32 } from '@/lib/utils';
+import { invoiceManagerAddress, usdcAddress } from '@/lib/wagmi';
+import { logger } from '@avax-usdc-invoices/shared';
+import { useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import { parseUnits } from 'viem';
+import { useAccount, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
 interface Invoice {
-  invoiceId: string
-  merchant: string
-  token: string
-  amount: bigint
-  dueAt: number
-  paid: boolean
-  payer: string
-  paidAt: number
+  invoiceId: string;
+  uuid?: string;
+  merchant: string;
+  token: string;
+  amount: bigint;
+  dueAt: bigint | number;
+  paid: boolean;
+  payer: string;
+  paidAt: number;
 }
 
 export default function MerchantPage() {
-  const { address, isConnected, chain } = useAccount()
-  const [amount, setAmount] = useState('')
-  const [dueDate, setDueDate] = useState('')
-  const [invoices, setInvoices] = useState<Invoice[]>([])
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const { address, isConnected } = useAccount();
+  const [amount, setAmount] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const { writeContract, data: hash, isPending, error: writeError } = useWriteContract()
+  const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
   const { isLoading: isConfirming } = useWaitForTransactionReceipt({
     hash,
-  })
+  });
 
   const validateEnvironment = () => {
     if (!invoiceManagerAddress || !usdcAddress) {
-      setError('Missing configuration. Please ensure NEXT_PUBLIC_INVOICE_MANAGER_ADDRESS and NEXT_PUBLIC_USDC_ADDRESS are set.')
-      return false
+      setError(
+        'Missing configuration. Please ensure NEXT_PUBLIC_INVOICE_MANAGER_ADDRESS and NEXT_PUBLIC_USDC_ADDRESS are set.'
+      );
+      return false;
     }
-    return true
-  }
+    return true;
+  };
 
   const handleCreateInvoice = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+    e.preventDefault();
+    setError('');
 
-    if (!validateEnvironment()) return
-    if (!address) return
+    if (!validateEnvironment()) return;
+    if (!address) return;
 
-    const amountInWei = parseUnits(amount, 6)
-    const dueAtTimestamp = dueDate ? Math.floor(new Date(dueDate).getTime() / 1000) : 0
-    const uuid = uuidv4()
-    const invoiceId = uuidToBytes32(uuid)
+    const amountInWei = parseUnits(amount, 6);
+    const dueAtTimestamp = dueDate ? BigInt(Math.floor(new Date(dueDate).getTime() / 1000)) : 0n;
+    const uuid = uuidv4();
+    const invoiceId = uuidToBytes32(uuid);
 
     try {
-      setLoading(true)
+      setLoading(true);
       writeContract({
         address: invoiceManagerAddress,
         abi: INVOICE_MANAGER_ABI,
         functionName: 'createInvoice',
         args: [invoiceId as `0x${string}`, usdcAddress, amountInWei, dueAtTimestamp],
-      })
+      });
 
       // Store invoice locally for display
       const newInvoice = {
@@ -78,38 +81,38 @@ export default function MerchantPage() {
         paid: false,
         payer: '0x0000000000000000000000000000000000000000000',
         paidAt: 0,
-      }
-      setInvoices([newInvoice, ...invoices])
+      };
+      setInvoices([newInvoice, ...invoices]);
     } catch (err) {
-      logger.error('Error creating invoice', err as Error, { amount, dueDate })
-      setError('Failed to create invoice. Please try again.')
+      logger.error('Error creating invoice', err as Error, { amount, dueDate });
+      setError('Failed to create invoice. Please try again.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const loadInvoices = async () => {
-    if (!address || !invoiceManagerAddress) return
+    if (!address || !invoiceManagerAddress) return;
 
     try {
-      setLoading(true)
-      const response = await fetch(`/api/invoices?merchant=${address}`)
+      setLoading(true);
+      const response = await fetch(`/api/invoices?merchant=${address}`);
       if (response.ok) {
-        const data = await response.json()
-        setInvoices(data.invoices || [])
+        const data = await response.json();
+        setInvoices(data.invoices || []);
       }
     } catch (err) {
-      logger.error('Error loading invoices', err as Error, { address })
+      logger.error('Error loading invoices', err as Error, { address });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     if (isConnected && address) {
-      loadInvoices()
+      loadInvoices();
     }
-  }, [isConnected, address, isConfirming])
+  }, [isConnected, address, isConfirming]);
 
   if (!isConnected) {
     return (
@@ -125,7 +128,7 @@ export default function MerchantPage() {
           </Card>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -142,7 +145,8 @@ export default function MerchantPage() {
           <Alert variant="destructive" className="mb-6">
             <AlertTitle>Configuration Error</AlertTitle>
             <AlertDescription>
-              Please set NEXT_PUBLIC_INVOICE_MANAGER_ADDRESS and NEXT_PUBLIC_USDC_ADDRESS in your environment variables.
+              Please set NEXT_PUBLIC_INVOICE_MANAGER_ADDRESS and NEXT_PUBLIC_USDC_ADDRESS in your
+              environment variables.
             </AlertDescription>
           </Alert>
         )}
@@ -189,13 +193,15 @@ export default function MerchantPage() {
 
                 {writeError && (
                   <Alert variant="destructive">
-                    <AlertDescription>
-                      {(writeError as Error).message}
-                    </AlertDescription>
+                    <AlertDescription>{(writeError as Error).message}</AlertDescription>
                   </Alert>
                 )}
 
-                <Button type="submit" disabled={isPending || isConfirming || loading} className="w-full">
+                <Button
+                  type="submit"
+                  disabled={isPending || isConfirming || loading}
+                  className="w-full"
+                >
                   {isPending || isConfirming ? 'Creating Invoice...' : 'Create Invoice'}
                 </Button>
               </form>
@@ -205,9 +211,7 @@ export default function MerchantPage() {
           <Card>
             <CardHeader>
               <CardTitle>Your Invoices</CardTitle>
-              <CardDescription>
-                View and track your created invoices
-              </CardDescription>
+              <CardDescription>View and track your created invoices</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -225,7 +229,9 @@ export default function MerchantPage() {
                       <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="font-semibold">Invoice #{invoice.uuid || shortenAddress(invoice.invoiceId)}</div>
+                            <div className="font-semibold">
+                              Invoice #{invoice.uuid || shortenAddress(invoice.invoiceId)}
+                            </div>
                             <div className="text-sm text-slate-500">
                               {formatUSDC(invoice.amount)} USDC
                             </div>
@@ -240,14 +246,17 @@ export default function MerchantPage() {
                                 Pending
                               </span>
                             )}
-                            <Button size="sm" variant="outline" asChild>
-                              <a href={`/pay/${invoice.invoiceId}`}>View</a>
-                            </Button>
+                            <a
+                              href={`/pay/${invoice.invoiceId}`}
+                              className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
+                            >
+                              View
+                            </a>
                           </div>
                         </div>
                         {invoice.dueAt > 0 && (
                           <div className="mt-2 text-sm text-slate-500">
-                            Due: {formatDate(invoice.dueAt)}
+                            Due: {formatDate(Number(invoice.dueAt))}
                           </div>
                         )}
                       </CardContent>
@@ -260,5 +269,5 @@ export default function MerchantPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

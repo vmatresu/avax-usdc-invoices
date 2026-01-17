@@ -14,11 +14,7 @@ interface ErrorMessageProps {
   className?: string;
 }
 
-export function ErrorMessage({
-  error,
-  title = 'Error',
-  className,
-}: ErrorMessageProps) {
+export function ErrorMessage({ error, title: _title = 'Error', className }: ErrorMessageProps) {
   if (!error) {
     return null;
   }

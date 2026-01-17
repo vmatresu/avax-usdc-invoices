@@ -1,73 +1,74 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert'
-import { invoiceManagerAddress, publicClient } from '@/lib/wagmi'
-import { INVOICE_MANAGER_ABI, getInvoice, getInvoicePaidLog } from '@/lib/contracts'
-import { logger } from '@avalanche-bridge/shared'
-import { formatUSDC, formatDate, shortenAddress } from '@/lib/utils'
-import Link from 'next/link'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { InvoiceRepository } from '@/lib/services/InvoiceRepository';
+import { formatDate, formatUSDC, shortenAddress } from '@/lib/utils';
+import { logger } from '@avax-usdc-invoices/shared';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 interface InvoiceData {
-  merchant: string
-  token: string
-  amount: bigint
-  dueAt: number
-  paid: boolean
-  payer: string
-  paidAt: number
+  merchant: string;
+  token: string;
+  amount: bigint;
+  dueAt: number;
+  paid: boolean;
+  payer: string;
+  paidAt: number;
 }
 
 interface PaymentLog {
-  transactionHash: string
-  blockNumber: bigint
+  transactionHash: string;
+  blockNumber: bigint;
   args?: {
-    invoiceId: string
-    merchant: string
-    payer: string
-    token: string
-    amount: bigint
-    paidAt: number
-  }
+    invoiceId: string;
+    merchant: string;
+    payer: string;
+    token: string;
+    amount: bigint;
+    paidAt: number;
+  };
 }
 
 export default function ReceiptPage({ params }: { params: { invoiceId: string } }) {
-  const [invoice, setInvoice] = useState<InvoiceData | null>(null)
-  const [paymentLog, setPaymentLog] = useState<PaymentLog | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [invoice, setInvoice] = useState<InvoiceData | null>(null);
+  const [paymentLog, setPaymentLog] = useState<PaymentLog | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const invoiceId = params.invoiceId as `0x${string}`
-  const explorerUrl = process.env.NEXT_PUBLIC_EXPLORER_BASE_URL || 'https://testnet.snowtrace.io'
+  const invoiceId = params.invoiceId as `0x${string}`;
+  const explorerUrl = process.env.NEXT_PUBLIC_EXPLORER_BASE_URL || 'https://testnet.snowtrace.io';
 
   useEffect(() => {
-    loadReceipt()
-  }, [invoiceId])
+    loadReceipt();
+  }, [invoiceId]);
 
   const loadReceipt = async () => {
-    if (!invoiceId || !invoiceManagerAddress) return
+    if (!invoiceId) return;
 
-    setLoading(true)
-    setError('')
+    setLoading(true);
+    setError('');
 
     try {
-      const invoiceData = await getInvoice(invoiceId, invoiceManagerAddress)
-      setInvoice(invoiceData as InvoiceData)
+      const repository = InvoiceRepository.getInstance();
+      const invoiceData = await repository.getInvoice(invoiceId);
+      setInvoice(invoiceData as InvoiceData);
 
       if (invoiceData.paid) {
-        const log = await getInvoicePaidLog(invoiceId, invoiceManagerAddress)
+        const log = await repository.getInvoicePaidEvent(invoiceId);
         if (log) {
-          setPaymentLog(log as PaymentLog)
+          setPaymentLog(log as unknown as PaymentLog);
         }
       }
     } catch (err) {
-      logger.error('Error loading receipt', err as Error, { invoiceId })
-      setError('Failed to load receipt. The invoice may not exist.')
+      logger.error('Error loading receipt', err as Error, { invoiceId });
+      setError('Failed to load receipt. The invoice may not exist.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -78,7 +79,7 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -91,7 +92,7 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
           </Alert>
         </div>
       </div>
-    )
+    );
   }
 
   if (!invoice) {
@@ -106,7 +107,7 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
           </Alert>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -126,7 +127,8 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
           <Alert variant="destructive" className="mb-6">
             <AlertTitle>Invoice Not Paid</AlertTitle>
             <AlertDescription>
-              This invoice has not been paid yet. Please visit the payment page to complete the transaction.
+              This invoice has not been paid yet. Please visit the payment page to complete the
+              transaction.
             </AlertDescription>
           </Alert>
         )}
@@ -191,9 +193,7 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
           <Card>
             <CardHeader>
               <CardTitle>Payment Details</CardTitle>
-              <CardDescription>
-                Complete transaction information for verification
-              </CardDescription>
+              <CardDescription>Complete transaction information for verification</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between">
@@ -215,7 +215,9 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
 
               <div className="flex justify-between">
                 <span className="text-slate-500">Amount Paid</span>
-                <span className="font-semibold">{formatUSDC(paymentLog.args?.amount || 0n)} USDC</span>
+                <span className="font-semibold">
+                  {formatUSDC(paymentLog.args?.amount || 0n)} USDC
+                </span>
               </div>
 
               <div className="flex justify-between">
@@ -225,13 +227,17 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
 
               <div className="flex justify-between">
                 <span className="text-slate-500">Token</span>
-                <span className="font-mono text-sm">{shortenAddress(paymentLog.args?.token || invoice.token)}</span>
+                <span className="font-mono text-sm">
+                  {shortenAddress(paymentLog.args?.token || invoice.token)}
+                </span>
               </div>
 
               {paymentLog.args?.merchant && (
                 <div className="flex justify-between">
                   <span className="text-slate-500">Merchant Address</span>
-                  <span className="font-mono text-sm">{shortenAddress(paymentLog.args.merchant)}</span>
+                  <span className="font-mono text-sm">
+                    {shortenAddress(paymentLog.args.merchant)}
+                  </span>
                 </div>
               )}
 
@@ -267,5 +273,5 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
         </div>
       </div>
     </div>
-  )
+  );
 }

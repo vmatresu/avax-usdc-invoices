@@ -3,11 +3,7 @@
  * Single Responsibility: Handles all input validation
  */
 
-import {
-  VALIDATION_PATTERNS,
-  ERROR_MESSAGES,
-  INVOICE_SETTINGS,
-} from '../constants';
+import { VALIDATION_PATTERNS, ERROR_MESSAGES, INVOICE_SETTINGS } from '../constants';
 import type { ValidationResult } from '../types';
 
 /**
@@ -57,10 +53,16 @@ export function validateAmount(amount: bigint): ValidationResult {
     return { isValid: false, error: 'Amount must be greater than 0' };
   }
   if (amount < INVOICE_SETTINGS.MIN_AMOUNT) {
-    return { isValid: false, error: `Minimum amount is ${formatUSDC(INVOICE_SETTINGS.MIN_AMOUNT)} USDC` };
+    return {
+      isValid: false,
+      error: `Minimum amount is ${formatUSDC(INVOICE_SETTINGS.MIN_AMOUNT)} USDC`,
+    };
   }
   if (amount > INVOICE_SETTINGS.MAX_AMOUNT) {
-    return { isValid: false, error: `Maximum amount is ${formatUSDC(INVOICE_SETTINGS.MAX_AMOUNT)} USDC` };
+    return {
+      isValid: false,
+      error: `Maximum amount is ${formatUSDC(INVOICE_SETTINGS.MAX_AMOUNT)} USDC`,
+    };
   }
   return { isValid: true };
 }
@@ -95,10 +97,7 @@ export function validateDueDate(dueAt: number): ValidationResult {
 /**
  * Validates invoice creation parameters
  */
-export function validateCreateInvoice(
-  amount: bigint,
-  dueAt: number
-): ValidationResult {
+export function validateCreateInvoice(amount: bigint, dueAt: number): ValidationResult {
   const amountValidation = validateAmount(amount);
   if (!amountValidation.isValid) {
     return amountValidation;
@@ -164,10 +163,7 @@ export function formatTimestamp(timestamp: number): string {
 /**
  * Shortens an address for display
  */
-export function shortenAddress(
-  address: string,
-  length: number = 6
-): string {
+export function shortenAddress(address: string, length: number = 6): string {
   if (!address || address.length <= length * 2 + 4) {
     return address;
   }
