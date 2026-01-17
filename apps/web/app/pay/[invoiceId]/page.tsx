@@ -9,7 +9,7 @@ import { formatDate, formatUSDC, shortenAddress } from '@/lib/utils';
 import { invoiceManagerAddress, usdcAddress } from '@/lib/wagmi';
 import { logger } from '@avax-usdc-invoices/shared';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { parseUnits } from 'viem';
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
@@ -89,13 +89,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
 
   const isExpired = invoice && invoice.dueAt > 0 && invoice.dueAt < Math.floor(Date.now() / 1000);
 
-  useEffect(() => {
-    if (invoice && invoice.paid) {
-      loadPaymentLog();
-    }
-  }, [invoice, invoice?.paid]);
-
-  const loadPaymentLog = async () => {
+  const loadPaymentLog = useCallback(async () => {
     if (!invoiceId || !invoiceManagerAddress) return;
 
     try {
@@ -106,7 +100,13 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
     } catch (err) {
       logger.error('Error loading payment log', err as Error, { invoiceId });
     }
-  };
+  }, [invoiceId]);
+
+  useEffect(() => {
+    if (invoice && invoice.paid) {
+      loadPaymentLog();
+    }
+  }, [invoice, invoice?.paid, loadPaymentLog]);
 
   const handleApprove = async () => {
     setError('');

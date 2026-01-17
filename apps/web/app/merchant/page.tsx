@@ -9,7 +9,7 @@ import { INVOICE_MANAGER_ABI } from '@/lib/contracts';
 import { formatDate, formatUSDC, shortenAddress, uuidToBytes32 } from '@/lib/utils';
 import { invoiceManagerAddress, usdcAddress } from '@/lib/wagmi';
 import { logger } from '@avax-usdc-invoices/shared';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { parseUnits } from 'viem';
 import { useAccount, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
@@ -91,7 +91,7 @@ export default function MerchantPage() {
     }
   };
 
-  const loadInvoices = async () => {
+  const loadInvoices = useCallback(async () => {
     if (!address || !invoiceManagerAddress) return;
 
     try {
@@ -106,13 +106,13 @@ export default function MerchantPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [address]);
 
   useEffect(() => {
     if (isConnected && address) {
       loadInvoices();
     }
-  }, [isConnected, address, isConfirming]);
+  }, [isConnected, address, isConfirming, loadInvoices]);
 
   if (!isConnected) {
     return (

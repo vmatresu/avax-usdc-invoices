@@ -7,7 +7,7 @@ import { InvoiceRepository } from '@/lib/services/InvoiceRepository';
 import { formatDate, formatUSDC, shortenAddress } from '@/lib/utils';
 import { logger } from '@avax-usdc-invoices/shared';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface InvoiceData {
   merchant: string;
@@ -41,11 +41,7 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
   const invoiceId = params.invoiceId as `0x${string}`;
   const explorerUrl = process.env.NEXT_PUBLIC_EXPLORER_BASE_URL || 'https://testnet.snowtrace.io';
 
-  useEffect(() => {
-    loadReceipt();
-  }, [invoiceId]);
-
-  const loadReceipt = async () => {
+  const loadReceipt = useCallback(async () => {
     if (!invoiceId) return;
 
     setLoading(true);
@@ -68,7 +64,11 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
     } finally {
       setLoading(false);
     }
-  };
+  }, [invoiceId]);
+
+  useEffect(() => {
+    loadReceipt();
+  }, [loadReceipt]);
 
   if (loading) {
     return (

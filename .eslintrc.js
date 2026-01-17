@@ -46,7 +46,7 @@ module.exports = {
     },
   },
   rules: {
-    // TypeScript Rules
+    // TypeScript Rules - Production grade
     '@typescript-eslint/no-unused-vars': [
       'error',
       {
@@ -61,17 +61,17 @@ module.exports = {
     '@typescript-eslint/no-unsafe-member-access': 'warn',
     '@typescript-eslint/no-unsafe-return': 'warn',
     '@typescript-eslint/no-unsafe-argument': 'warn',
-    '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-non-null-assertion': 'warn',
-    '@typescript-eslint/strict-boolean-expressions': 'off',
+    '@typescript-eslint/strict-boolean-expressions': 'off', // Too strict for React patterns
     '@typescript-eslint/prefer-nullish-coalescing': 'warn',
     '@typescript-eslint/prefer-optional-chain': 'warn',
+    // TODO: Change these to 'error' after fixing all floating promise issues
     '@typescript-eslint/no-floating-promises': 'warn',
     '@typescript-eslint/no-misused-promises': 'warn',
     '@typescript-eslint/await-thenable': 'warn',
-    '@typescript-eslint/require-await': 'off',
+    '@typescript-eslint/require-await': 'warn',
     '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
     '@typescript-eslint/no-unnecessary-type-constraint': 'error',
     '@typescript-eslint/consistent-type-imports': [
@@ -81,12 +81,14 @@ module.exports = {
         disallowTypeAnnotations: false,
       },
     ],
+    '@typescript-eslint/unbound-method': 'warn',
 
     // React Rules
     'react/react-in-jsx-scope': 'off',
     'react/prop-types': 'off',
     'react/display-name': 'warn',
     'react/jsx-key': 'error',
+    'react/jsx-no-useless-fragment': 'warn',
     'react/jsx-pascal-case': [
       'error',
       {
@@ -124,14 +126,14 @@ module.exports = {
 
     // React Hooks Rules
     'react-hooks/rules-of-hooks': 'error',
-    'react-hooks/exhaustive-deps': 'warn',
+    'react-hooks/exhaustive-deps': 'error',
 
+    // Accessibility Rules
     'jsx-a11y/anchor-is-valid': 'warn',
     'jsx-a11y/click-events-have-key-events': 'warn',
-    'jsx-a11y/label-has-associated-control': 'off',
+    'jsx-a11y/label-has-associated-control': 'warn',
     'jsx-a11y/no-static-element-interactions': 'warn',
-    'jsx-a11y/heading-has-content': 'off',
-    'react/jsx-no-useless-fragment': 'off',
+    'jsx-a11y/heading-has-content': 'warn',
 
     // General Rules
     'no-console': [
@@ -148,10 +150,10 @@ module.exports = {
     'prefer-arrow-callback': 'error',
     'prefer-spread': 'error',
     'object-shorthand': 'error',
-    'no-param-reassign': 'warn',
+    'no-param-reassign': 'error',
     'no-return-await': 'warn',
     'require-await': 'warn',
-    'no-shadow': 'off',
+    'no-shadow': 'off', // Using @typescript-eslint/no-shadow instead
     'no-duplicate-imports': 'warn',
     'sort-imports': [
       'warn',
@@ -163,7 +165,6 @@ module.exports = {
         allowSeparatedGroups: true,
       },
     ],
-    '@typescript-eslint/unbound-method': 'off',
     'no-unused-vars': 'off', // Handled by TypeScript
     'no-undef': 'off', // Handled by TypeScript
   },
@@ -175,9 +176,19 @@ module.exports = {
       },
     },
     {
-      files: ['*.js', '*.jsx', '*.mjs'],
+      files: ['*.js', '*.jsx', '*.mjs', '*.config.js', 'jest.config.js'],
       rules: {
         '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+    {
+      files: ['*.test.ts', '*.test.tsx', '*.spec.ts', '*.spec.tsx'],
+      rules: {
+        '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+        '@typescript-eslint/no-unsafe-return': 'off',
+        '@typescript-eslint/unbound-method': 'off',
       },
     },
   ],
