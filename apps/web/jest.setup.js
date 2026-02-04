@@ -5,6 +5,11 @@
  */
 
 import '@testing-library/jest-dom';
+import { TextDecoder, TextEncoder } from 'util';
+import 'whatwg-fetch';
+
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
 
 // Mock environment variables
 process.env.NEXT_PUBLIC_CHAIN_ID = '43113';
@@ -14,19 +19,21 @@ process.env.NEXT_PUBLIC_EXPLORER_BASE_URL = 'https://testnet.snowtrace.io';
 process.env.NEXT_PUBLIC_INVOICE_MANAGER_ADDRESS = '0x1234567890abcdef1234567890abcdef12345678';
 
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation((query) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(), // Deprecated
-    removeListener: jest.fn(), // Deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-});
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(), // Deprecated
+      removeListener: jest.fn(), // Deprecated
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  });
+}
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {

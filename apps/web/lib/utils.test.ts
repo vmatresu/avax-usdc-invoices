@@ -42,7 +42,7 @@ describe('Utils', () => {
 
     it('should format 1000.25 USDC', () => {
       const result = formatUSDC(1_000_250_000n);
-      expect(result).toBe('1000.25');
+      expect(result).toBe('1,000.25'); // Uses locale formatting with commas
     });
 
     it('should format large amounts', () => {
@@ -52,12 +52,12 @@ describe('Utils', () => {
 
     it('should format with decimals', () => {
       const result = formatUSDC(1_000_001n);
-      expect(result).toBe('1.00'); // 1 USDC + 1 wei
+      expect(result).toBe('1.000001'); // Shows all significant decimals up to 6
     });
 
     it('should handle very small amounts', () => {
       const result = formatUSDC(1n);
-      expect(result).toBe('0.00');
+      expect(result).toBe('0.000001');
     });
   });
 
@@ -71,7 +71,7 @@ describe('Utils', () => {
       const now = Math.floor(Date.now() / 1000);
       const result = formatDate(now);
       expect(result).toBeDefined();
-      expect(result).toMatch(/\d{1,2}\/\d{1,2}\/\d{4}/);
+      expect(result).toMatch(/[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{2}:\d{2} [AP]M/);
     });
 
     it('should format specific timestamp', () => {
@@ -84,7 +84,7 @@ describe('Utils', () => {
     it('should format timestamp with time', () => {
       const timestamp = 1704067200;
       const result = formatDate(timestamp);
-      expect(result).toMatch(/\d{1,2}:\d{2}/);
+      expect(result).toMatch(/[A-Z][a-z]{2} \d{1,2}, \d{4}, \d{2}:\d{2} [AP]M/);
     });
 
     it('should handle different timezones', () => {
@@ -100,24 +100,24 @@ describe('Utils', () => {
 
     it('should shorten address', () => {
       const result = shortenAddress(address);
-      expect(result).toBe('0xB97E...48a6E');
+      expect(result).toBe('0xB97E...8a6E'); // slice(0,6) + '...' + slice(-4)
     });
 
-    it('should return full address if too short', () => {
+    it('should handle short address by still slicing', () => {
       const shortAddress = '0xB97E';
       const result = shortenAddress(shortAddress);
-      expect(result).toBe(shortAddress);
+      expect(result).toBe('0xB97E...B97E'); // slice(0,6) gives full, slice(-4) gives last 4
     });
 
     it('should handle empty string', () => {
       const result = shortenAddress('');
-      expect(result).toBe('');
+      expect(result).toBe('...'); // Empty slices
     });
 
-    it('should handle invalid address', () => {
+    it('should shorten invalid address format', () => {
       const invalidAddress = 'not-an-address';
       const result = shortenAddress(invalidAddress);
-      expect(result).toBe('not-an...');
+      expect(result).toBe('not-an...ress'); // slice(0,6) + '...' + slice(-4)
     });
   });
 

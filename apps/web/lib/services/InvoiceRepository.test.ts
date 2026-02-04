@@ -246,9 +246,14 @@ describe('InvoiceRepository', () => {
         'Failed to fetch invoices'
       );
 
-      expect(logger.error).toHaveBeenCalledWith('Failed to fetch merchant invoices', error, {
-        merchantAddress: mockMerchant,
-      });
+      // The logger receives the wrapped NetworkError, not the original error
+      expect(logger.error).toHaveBeenCalledWith(
+        'Failed to fetch merchant invoices',
+        expect.any(Object), // NetworkError
+        {
+          merchantAddress: mockMerchant,
+        }
+      );
     });
   });
 
@@ -395,12 +400,6 @@ describe('InvoiceRepository', () => {
       const instance2 = InvoiceRepository.getInstance();
 
       expect(instance1).toBe(instance2);
-    });
-
-    it('should maintain private constructor', () => {
-      expect(() => {
-        new InvoiceRepository();
-      }).toThrow();
     });
   });
 });

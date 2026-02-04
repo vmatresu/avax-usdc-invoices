@@ -1,7 +1,20 @@
+/**
+ * @jest-environment node
+ */
+import { getInvoice, getMerchantInvoiceCreatedLogs } from '@/lib/contracts';
+import { logger } from '@avax-usdc-invoices/shared';
 import { NextRequest } from 'next/server';
 import { GET } from './route';
-import { getMerchantInvoiceCreatedLogs, getInvoice } from '@/lib/contracts';
-import { logger } from '@avax-usdc-invoices/shared';
+
+jest.mock('next/server', () => ({
+  NextRequest: jest.fn(),
+  NextResponse: {
+    json: jest.fn((data, init) => ({
+      json: async () => data,
+      status: init?.status ?? 200,
+    })),
+  },
+}));
 
 // Mock dependencies
 jest.mock('@/lib/contracts', () => ({
@@ -48,7 +61,9 @@ describe('API: /api/invoices', () => {
 
   describe('GET endpoint', () => {
     it('should return 400 if merchant parameter is missing', async () => {
-      const request = new NextRequest(new URL('http://localhost/api/invoices'));
+      const request = {
+        nextUrl: new URL('http://localhost/api/invoices'),
+      } as NextRequest;
       const response = await GET(request);
 
       expect(response.status).toBe(400);
@@ -63,9 +78,9 @@ describe('API: /api/invoices', () => {
         invoiceManagerAddress: undefined,
       }));
 
-      const request = new NextRequest(
-        new URL(`http://localhost/api/invoices?merchant=${mockMerchant}`)
-      );
+      const request = {
+        nextUrl: new URL(`http://localhost/api/invoices?merchant=${mockMerchant}`),
+      } as NextRequest;
       const response = await GET(request);
 
       expect(response.status).toBe(500);
@@ -78,9 +93,9 @@ describe('API: /api/invoices', () => {
       (getMerchantInvoiceCreatedLogs as jest.Mock).mockResolvedValue([mockLog]);
       (getInvoice as jest.Mock).mockResolvedValue(mockInvoice);
 
-      const request = new NextRequest(
-        new URL(`http://localhost/api/invoices?merchant=${mockMerchant}`)
-      );
+      const request = {
+        nextUrl: new URL(`http://localhost/api/invoices?merchant=${mockMerchant}`),
+      } as NextRequest;
       const response = await GET(request);
 
       expect(response.status).toBe(200);
@@ -108,9 +123,9 @@ describe('API: /api/invoices', () => {
     it('should return empty array if merchant has no invoices', async () => {
       (getMerchantInvoiceCreatedLogs as jest.Mock).mockResolvedValue([]);
 
-      const request = new NextRequest(
-        new URL(`http://localhost/api/invoices?merchant=${mockMerchant}`)
-      );
+      const request = {
+        nextUrl: new URL(`http://localhost/api/invoices?merchant=${mockMerchant}`),
+      } as NextRequest;
       const response = await GET(request);
 
       expect(response.status).toBe(200);
@@ -143,9 +158,9 @@ describe('API: /api/invoices', () => {
         .mockResolvedValueOnce(mockInvoice)
         .mockResolvedValueOnce(mockInvoice2);
 
-      const request = new NextRequest(
-        new URL(`http://localhost/api/invoices?merchant=${mockMerchant}`)
-      );
+      const request = {
+        nextUrl: new URL(`http://localhost/api/invoices?merchant=${mockMerchant}`),
+      } as NextRequest;
       const response = await GET(request);
 
       expect(response.status).toBe(200);
@@ -159,9 +174,9 @@ describe('API: /api/invoices', () => {
       const error = new Error('Failed to fetch logs');
       (getMerchantInvoiceCreatedLogs as jest.Mock).mockRejectedValue(error);
 
-      const request = new NextRequest(
-        new URL(`http://localhost/api/invoices?merchant=${mockMerchant}`)
-      );
+      const request = {
+        nextUrl: new URL(`http://localhost/api/invoices?merchant=${mockMerchant}`),
+      } as NextRequest;
       const response = await GET(request);
 
       expect(response.status).toBe(500);
@@ -177,9 +192,9 @@ describe('API: /api/invoices', () => {
       (getMerchantInvoiceCreatedLogs as jest.Mock).mockResolvedValue([mockLog]);
       (getInvoice as jest.Mock).mockRejectedValue(error);
 
-      const request = new NextRequest(
-        new URL(`http://localhost/api/invoices?merchant=${mockMerchant}`)
-      );
+      const request = {
+        nextUrl: new URL(`http://localhost/api/invoices?merchant=${mockMerchant}`),
+      } as NextRequest;
       const response = await GET(request);
 
       expect(response.status).toBe(500);
@@ -194,9 +209,9 @@ describe('API: /api/invoices', () => {
       (getMerchantInvoiceCreatedLogs as jest.Mock).mockResolvedValue([]);
       (getInvoice as jest.Mock).mockResolvedValue(mockInvoice);
 
-      const request = new NextRequest(
-        new URL(`http://localhost/api/invoices?merchant=${mockMerchant}`)
-      );
+      const request = {
+        nextUrl: new URL(`http://localhost/api/invoices?merchant=${mockMerchant}`),
+      } as NextRequest;
       const response = await GET(request);
 
       expect(response.status).toBe(200);
@@ -207,9 +222,9 @@ describe('API: /api/invoices', () => {
       (getMerchantInvoiceCreatedLogs as jest.Mock).mockResolvedValue([]);
       (getInvoice as jest.Mock).mockResolvedValue(mockInvoice);
 
-      const request = new NextRequest(
-        new URL(`http://localhost/api/invoices?merchant=${mixedCaseMerchant}`)
-      );
+      const request = {
+        nextUrl: new URL(`http://localhost/api/invoices?merchant=${mixedCaseMerchant}`),
+      } as NextRequest;
       const response = await GET(request);
 
       expect(response.status).toBe(200);

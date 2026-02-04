@@ -15,8 +15,9 @@ const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/lib/$1',
-    '^@avalanche-bridge/(.*)$': '<rootDir>/../../../packages/shared/$1',
+    '^@/(.*)$': '<rootDir>/$1',
+    '^@avax-usdc-invoices/shared$': '<rootDir>/../../packages/shared/index.ts',
+    '^@avax-usdc-invoices/shared/(.*)$': '<rootDir>/../../packages/shared/$1',
   },
   collectCoverageFrom: [
     'lib/**/*.{ts,tsx}',
@@ -35,7 +36,10 @@ const customJestConfig = {
     },
   },
   testMatch: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
-  transformIgnorePatterns: ['/node_modules/', '^.+\\.module\\.(css|sass|scss)$'],
+  transformIgnorePatterns: [
+    'node_modules/(?!.*(viem|wagmi|@wagmi|@avax-usdc-invoices))',
+    '^.+\\.module\\.(css|sass|scss)$',
+  ],
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
