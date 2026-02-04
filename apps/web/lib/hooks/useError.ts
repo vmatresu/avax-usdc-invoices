@@ -5,16 +5,15 @@
 
 'use client';
 
-import { useCallback } from 'react';
 import {
-  getErrorMessage,
   getErrorCode,
-  logger,
+  getErrorMessage,
   isAppError,
-  type AppError,
+  logger,
   WalletNotConnectedError,
   WrongNetworkError,
 } from '@avax-usdc-invoices/shared';
+import { useCallback } from 'react';
 import { useAccount } from 'wagmi';
 import { NetworkConfigService } from '../config/network';
 
@@ -36,7 +35,7 @@ export function useError() {
     const expectedChainId = networkConfig.getChainId();
 
     if (chain?.id !== expectedChainId) {
-      throw new WrongNetworkError(expectedChainId, chain?.id || 0);
+      throw new WrongNetworkError(expectedChainId, chain?.id ?? 0);
     }
   }, [isConnected, address, chain]);
 
@@ -50,7 +49,7 @@ export function useError() {
     logger.error('Error occurred', error as Error, { code });
 
     if (isAppError(error)) {
-      return (error as AppError).message;
+      return error.message;
     }
 
     return message;
@@ -85,4 +84,4 @@ export function useError() {
 /**
  * Export for use in non-hook contexts
  */
-export { getErrorMessage, getErrorCode };
+export { getErrorCode, getErrorMessage };

@@ -39,7 +39,7 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
   const [error, setError] = useState('');
 
   const invoiceId = params.invoiceId as `0x${string}`;
-  const explorerUrl = process.env.NEXT_PUBLIC_EXPLORER_BASE_URL || 'https://testnet.snowtrace.io';
+  const explorerUrl = process.env.NEXT_PUBLIC_EXPLORER_BASE_URL ?? 'https://testnet.snowtrace.io';
 
   const loadReceipt = useCallback(async () => {
     if (!invoiceId) return;
@@ -67,7 +67,7 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
   }, [invoiceId]);
 
   useEffect(() => {
-    loadReceipt();
+    void loadReceipt();
   }, [loadReceipt]);
 
   if (loading) {
@@ -216,19 +216,19 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
               <div className="flex justify-between">
                 <span className="text-slate-500">Amount Paid</span>
                 <span className="font-semibold">
-                  {formatUSDC(paymentLog.args?.amount || 0n)} USDC
+                  {formatUSDC(paymentLog.args?.amount ?? 0n)} USDC
                 </span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-slate-500">Payment Timestamp</span>
-                <span>{formatDate(paymentLog.args?.paidAt || 0)}</span>
+                <span>{formatDate(paymentLog.args?.paidAt ?? 0)}</span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-slate-500">Token</span>
                 <span className="font-mono text-sm">
-                  {shortenAddress(paymentLog.args?.token || invoice.token)}
+                  {shortenAddress(paymentLog.args?.token ?? invoice.token)}
                 </span>
               </div>
 

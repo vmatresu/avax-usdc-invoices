@@ -29,7 +29,7 @@ export function bytes32ToHex(bytes32: string): string {
 }
 
 export function uuidToBytes32(uuid: string): string {
-  return '0x' + uuid.replace(/-/g, '');
+  return `0x${uuid.replace(/-/g, '')}`;
 }
 
 export function shortenTxHash(hash: string): string {

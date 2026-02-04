@@ -7,8 +7,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import type { Invoice } from '@avax-usdc-invoices/shared';
-import { InvoiceStatus, isInvoiceExpired, logger } from '@avax-usdc-invoices/shared';
+import { type Invoice, InvoiceStatus, isInvoiceExpired, logger } from '@avax-usdc-invoices/shared';
 import { InvoiceRepository } from '../services/InvoiceRepository';
 import { getErrorMessage } from './useError';
 
@@ -50,7 +49,7 @@ export function useInvoice(invoiceId: string): UseInvoiceReturn {
   }, [invoiceId, repository]);
 
   useEffect(() => {
-    fetchInvoice();
+    void fetchInvoice();
   }, [fetchInvoice]);
 
   const status = deriveInvoiceStatus(invoice);
@@ -99,7 +98,7 @@ export function useMerchantInvoices(merchantAddress: string | undefined): {
   }, [merchantAddress, repository]);
 
   useEffect(() => {
-    fetchInvoices();
+    void fetchInvoices();
   }, [fetchInvoices]);
 
   return {

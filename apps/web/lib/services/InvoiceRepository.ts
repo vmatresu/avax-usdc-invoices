@@ -3,13 +3,15 @@
  * Single Responsibility: Handles all invoice data access
  */
 
-import type {
-  IInvoiceRepository,
-  Invoice,
-  InvoiceCreatedEvent,
-  InvoicePaidEvent,
+import {
+  type IInvoiceRepository,
+  type Invoice,
+  type InvoiceCreatedEvent,
+  type InvoicePaidEvent,
+  InvoiceNotFoundError,
+  NetworkError,
+  logger,
 } from '@avax-usdc-invoices/shared';
-import { InvoiceNotFoundError, NetworkError, logger } from '@avax-usdc-invoices/shared';
 import { NetworkConfigService } from '../config/network';
 import { INVOICE_MANAGER_ABI } from '../contracts/abi';
 import { publicClient } from '../wagmi';
@@ -54,7 +56,7 @@ export class InvoiceRepository implements IInvoiceRepository {
         id: invoiceId,
         merchant: merchant as string,
         token: token as string,
-        amount: amount as bigint,
+        amount,
         dueAt: Number(dueAt),
         paid: paid as boolean,
         payer: payer as string,

@@ -32,5 +32,19 @@ export const publicClient = createPublicClient({
 });
 
 // Export contract addresses for use in pages and API routes
-export const invoiceManagerAddress = networkConfig.getInvoiceManagerAddress() as `0x${string}`;
-export const usdcAddress = networkConfig.getUSDCAddress() as `0x${string}`;
+// These are nullable to allow build-time success when env vars are not set
+export const invoiceManagerAddress = (() => {
+  try {
+    return networkConfig.getInvoiceManagerAddress() as `0x${string}`;
+  } catch {
+    return undefined;
+  }
+})();
+
+export const usdcAddress = (() => {
+  try {
+    return networkConfig.getUSDCAddress() as `0x${string}`;
+  } catch {
+    return undefined;
+  }
+})();

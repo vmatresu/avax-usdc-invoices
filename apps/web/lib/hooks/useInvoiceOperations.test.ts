@@ -63,8 +63,8 @@ describe('useInvoiceOperations', () => {
       mockWriteContract.mockResolvedValue('0xtxhash');
       const { result } = renderHook(() => useInvoiceOperations());
 
-      await act(async () => {
-        await result.current.createInvoice(params);
+      act(() => {
+        result.current.createInvoice(params);
       });
 
       await waitFor(() => {
@@ -106,8 +106,8 @@ describe('useInvoiceOperations', () => {
       mockWriteContract.mockResolvedValue(txHash);
       const { result } = renderHook(() => useInvoiceOperations());
 
-      const hash = await act(async () => {
-        return await result.current.createInvoice(params);
+      const hash = act(() => {
+        return result.current.createInvoice(params);
       });
 
       await waitFor(() => {
@@ -120,8 +120,8 @@ describe('useInvoiceOperations', () => {
       mockWriteContract.mockRejectedValue(error);
       const { result } = renderHook(() => useInvoiceOperations());
 
-      await act(async () => {
-        await result.current.createInvoice(params);
+      act(() => {
+        result.current.createInvoice(params);
       });
 
       await waitFor(() => {
@@ -134,8 +134,8 @@ describe('useInvoiceOperations', () => {
       mockWriteContract.mockRejectedValue(new Error('Error'));
       const { result } = renderHook(() => useInvoiceOperations());
 
-      await act(async () => {
-        await result.current.createInvoice(params);
+      act(() => {
+        result.current.createInvoice(params);
       });
 
       await waitFor(() => {
@@ -164,8 +164,8 @@ describe('useInvoiceOperations', () => {
       mockWriteContract.mockResolvedValue('0xtxhash');
       const { result } = renderHook(() => useInvoiceOperations());
 
-      await act(async () => {
-        await result.current.payInvoice(params);
+      act(() => {
+        result.current.payInvoice(params);
       });
 
       await waitFor(() => {
@@ -202,8 +202,8 @@ describe('useInvoiceOperations', () => {
       mockWriteContract.mockResolvedValue(txHash);
       const { result } = renderHook(() => useInvoiceOperations());
 
-      const hash = await act(async () => {
-        return await result.current.payInvoice(params);
+      const hash = act(() => {
+        return result.current.payInvoice(params);
       });
 
       await waitFor(() => {
@@ -216,8 +216,8 @@ describe('useInvoiceOperations', () => {
       mockWriteContract.mockRejectedValue(error);
       const { result } = renderHook(() => useInvoiceOperations());
 
-      await act(async () => {
-        await result.current.payInvoice(params);
+      act(() => {
+        result.current.payInvoice(params);
       });
 
       await waitFor(() => {
@@ -233,8 +233,8 @@ describe('useInvoiceOperations', () => {
       mockWriteContract.mockResolvedValue('0xtxhash');
       const { result } = renderHook(() => useInvoiceOperations());
 
-      await act(async () => {
-        await result.current.approveUSDC(amount);
+      act(() => {
+        result.current.approveUSDC(amount);
       });
 
       await waitFor(() => {
@@ -271,8 +271,8 @@ describe('useInvoiceOperations', () => {
       mockWriteContract.mockResolvedValue(txHash);
       const { result } = renderHook(() => useInvoiceOperations());
 
-      const hash = await act(async () => {
-        return await result.current.approveUSDC(amount);
+      const hash = act(() => {
+        return result.current.approveUSDC(amount);
       });
 
       await waitFor(() => {
@@ -285,8 +285,8 @@ describe('useInvoiceOperations', () => {
       mockWriteContract.mockRejectedValue(error);
       const { result } = renderHook(() => useInvoiceOperations());
 
-      await act(async () => {
-        await result.current.approveUSDC(amount);
+      act(() => {
+        result.current.approveUSDC(amount);
       });
 
       await waitFor(() => {
@@ -296,7 +296,7 @@ describe('useInvoiceOperations', () => {
   });
 
   describe('state management', () => {
-    it('should combine loading states from wagmi hooks', async () => {
+    it('should combine loading states from wagmi hooks', () => {
       (useWriteContract as jest.Mock).mockReturnValue({
         writeContract: mockWriteContract,
         isPending: true,

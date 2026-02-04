@@ -49,11 +49,14 @@ export default function MerchantPage() {
     return true;
   };
 
-  const handleCreateInvoice = async (e: React.FormEvent) => {
+  const handleCreateInvoice = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!validateEnvironment()) return;
+    if (!invoiceManagerAddress || !usdcAddress) {
+      setError('Missing configuration. Please ensure NEXT_PUBLIC_INVOICE_MANAGER_ADDRESS is set.');
+      return;
+    }
     if (!address) return;
 
     const amountInWei = parseUnits(amount, 6);
@@ -98,8 +101,8 @@ export default function MerchantPage() {
       setLoading(true);
       const response = await fetch(`/api/invoices?merchant=${address}`);
       if (response.ok) {
-        const data = await response.json();
-        setInvoices(data.invoices || []);
+        const data = (await response.json()) as { invoices?: Invoice[] };
+        setInvoices(data.invoices ?? []);
       }
     } catch (err) {
       logger.error('Error loading invoices', err as Error, { address });
@@ -110,7 +113,7 @@ export default function MerchantPage() {
 
   useEffect(() => {
     if (isConnected && address) {
-      loadInvoices();
+      void loadInvoices();
     }
   }, [isConnected, address, isConfirming, loadInvoices]);
 
@@ -230,7 +233,7 @@ export default function MerchantPage() {
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-semibold">
-                              Invoice #{invoice.uuid || shortenAddress(invoice.invoiceId)}
+                              Invoice #{invoice.uuid ?? shortenAddress(invoice.invoiceId)}
                             </div>
                             <div className="text-sm text-slate-500">
                               {formatUSDC(invoice.amount)} USDC

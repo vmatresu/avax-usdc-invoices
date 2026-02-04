@@ -3,8 +3,12 @@
  * Single Responsibility: Manages network settings
  */
 
-import { NETWORKS, USDC_ADDRESSES, type NetworkConfig } from '@avax-usdc-invoices/shared';
-import type { INetworkConfig } from '@avax-usdc-invoices/shared';
+import {
+  type INetworkConfig,
+  type NetworkConfig,
+  NETWORKS,
+  USDC_ADDRESSES,
+} from '@avax-usdc-invoices/shared';
 
 export class NetworkConfigService implements INetworkConfig {
   private static instance: NetworkConfigService;

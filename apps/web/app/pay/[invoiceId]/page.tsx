@@ -56,7 +56,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
     address: usdcAddress,
     abi: USDC_ABI,
     functionName: 'allowance',
-    args: [address || '0x0000000000000000000000000000000000000000000', invoiceManagerAddress],
+    args: [address ?? '0x0000000000000000000000000000000000000000000', invoiceManagerAddress!],
     query: {
       enabled: !!address && !!invoiceManagerAddress && !!usdcAddress,
     },
@@ -66,7 +66,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
     address: usdcAddress,
     abi: USDC_ABI,
     functionName: 'balanceOf',
-    args: [address || '0x0000000000000000000000000000000000000000000'],
+    args: [address ?? '0x0000000000000000000000000000000000000000000'],
     query: {
       enabled: !!address && !!usdcAddress,
     },
@@ -104,13 +104,13 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
 
   useEffect(() => {
     if (invoice && invoice.paid) {
-      loadPaymentLog();
+      void loadPaymentLog();
     }
   }, [invoice, invoice?.paid, loadPaymentLog]);
 
-  const handleApprove = async () => {
+  const handleApprove = () => {
     setError('');
-    if (!address || !invoice) return;
+    if (!address || !invoice || !usdcAddress || !invoiceManagerAddress) return;
 
     const amount = approvalAmount || (invoice.amount / 10n ** 6n).toString();
     const amountInWei = parseUnits(amount, 6);
@@ -128,9 +128,9 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
     }
   };
 
-  const handlePay = async () => {
+  const handlePay = () => {
     setError('');
-    if (!address) return;
+    if (!address || !invoiceManagerAddress) return;
 
     try {
       payInvoice({
@@ -243,7 +243,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
         </Card>
 
         {!invoice.paid && !isExpired && (
-          <>
+          <div>
             {!isConnected ? (
               <Alert className="mt-6">
                 <AlertTitle>Connect Wallet</AlertTitle>
@@ -336,7 +336,7 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
                 </Card>
               </>
             )}
-          </>
+          </div>
         )}
 
         {invoice.paid && paymentLog && (
@@ -366,13 +366,13 @@ export default function PayInvoicePage({ params }: { params: { invoiceId: string
               <div className="flex justify-between">
                 <span className="text-slate-500">Amount Paid</span>
                 <span className="font-semibold">
-                  {formatUSDC(paymentLog.args?.amount || 0n)} USDC
+                  {formatUSDC(paymentLog.args?.amount ?? 0n)} USDC
                 </span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-slate-500">Payment Timestamp</span>
-                <span>{formatDate(Number(paymentLog.args?.paidAt || 0n))}</span>
+                <span>{formatDate(Number(paymentLog.args?.paidAt ?? 0n))}</span>
               </div>
 
               <Link href={`/receipt/${invoiceId}`}>

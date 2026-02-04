@@ -5,12 +5,13 @@
 
 'use client';
 
-import type {
-  CreateInvoiceParams,
-  InvoiceOperationState,
-  PaymentParams,
+import {
+  type CreateInvoiceParams,
+  type InvoiceOperationState,
+  type PaymentParams,
+  GAS_LIMITS,
+  logger,
 } from '@avax-usdc-invoices/shared';
-import { GAS_LIMITS, logger } from '@avax-usdc-invoices/shared';
 import { useCallback, useEffect, useState } from 'react';
 import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 import { NetworkConfigService } from '../config/network';
@@ -18,9 +19,9 @@ import { INVOICE_MANAGER_ABI, USDC_ABI } from '../contracts/abi';
 import { getErrorMessage } from './useError';
 
 interface UseInvoiceOperationsReturn {
-  createInvoice: (params: CreateInvoiceParams) => Promise<string | null>;
-  payInvoice: (params: PaymentParams) => Promise<string | null>;
-  approveUSDC: (amount: bigint) => Promise<string | null>;
+  createInvoice: (params: CreateInvoiceParams) => string | null;
+  payInvoice: (params: PaymentParams) => string | null;
+  approveUSDC: (amount: bigint) => string | null;
   state: InvoiceOperationState;
   resetState: () => void;
 }
@@ -48,7 +49,7 @@ export function useInvoiceOperations(): UseInvoiceOperationsReturn {
   }, []);
 
   const createInvoice = useCallback(
-    async (params: CreateInvoiceParams): Promise<string | null> => {
+    (params: CreateInvoiceParams): string | null => {
       updateState({ isLoading: true, error: null });
 
       try {
@@ -86,7 +87,7 @@ export function useInvoiceOperations(): UseInvoiceOperationsReturn {
   );
 
   const payInvoice = useCallback(
-    async (params: PaymentParams): Promise<string | null> => {
+    (params: PaymentParams): string | null => {
       updateState({ isLoading: true, error: null });
 
       try {
@@ -117,7 +118,7 @@ export function useInvoiceOperations(): UseInvoiceOperationsReturn {
   );
 
   const approveUSDC = useCallback(
-    async (amount: bigint): Promise<string | null> => {
+    (amount: bigint): string | null => {
       updateState({ isLoading: true, error: null });
 
       try {
@@ -168,7 +169,7 @@ export function useInvoiceOperations(): UseInvoiceOperationsReturn {
     state: {
       isLoading: state.isLoading || isPending || isConfirming,
       isPending: state.isPending || isPending || isConfirming,
-      error: state.error || (writeError ? getErrorMessage(writeError) : null),
+      error: state.error ?? (writeError ? getErrorMessage(writeError) : null),
     },
     resetState,
   };

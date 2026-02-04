@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getMerchantInvoiceCreatedLogs, getInvoice } from '@/lib/contracts';
+import { getInvoice, getMerchantInvoiceCreatedLogs } from '@/lib/contracts';
 import { invoiceManagerAddress } from '@/lib/wagmi';
 import { logger } from '@avax-usdc-invoices/shared';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -18,18 +18,15 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Capture the contract address to ensure TypeScript narrows the type for async callbacks
+  const contractAddress = invoiceManagerAddress;
+
   try {
-    const logs = await getMerchantInvoiceCreatedLogs(
-      merchant as `0x${string}`,
-      invoiceManagerAddress
-    );
+    const logs = await getMerchantInvoiceCreatedLogs(merchant as `0x${string}`, contractAddress);
 
     const invoices = await Promise.all(
       logs.map(async (log) => {
-        const invoice = await getInvoice(
-          log.args.invoiceId as `0x${string}`,
-          invoiceManagerAddress
-        );
+        const invoice = await getInvoice(log.args.invoiceId as `0x${string}`, contractAddress);
         return {
           invoiceId: log.args.invoiceId,
           uuid: log.args.invoiceId,
