@@ -110,31 +110,33 @@ contract InvoiceManager is ReentrancyGuard {
     function payInvoice(bytes32 invoiceId) external nonReentrant {
         Invoice storage invoice = invoices[invoiceId];
 
-        // Validate invoice exists
+        // CHECKS - Validate all preconditions first
         if (invoice.merchant == address(0)) revert InvoiceNotFound(invoiceId);
-
-        // Validate invoice is not paid
         if (invoice.paid) revert InvoiceAlreadyPaid();
-
-        // Validate expiration if due date is set
         if (invoice.dueAt != 0 && block.timestamp > invoice.dueAt) revert InvoiceExpired();
 
-        // Transfer USDC from payer to merchant
-        // SafeERC20 will revert if transfer fails
-        IERC20(invoice.token).safeTransferFrom(msg.sender, invoice.merchant, invoice.amount);
+        // Cache values for use after state changes (gas optimization + CEI compliance)
+        address merchant = invoice.merchant;
+        address token = invoice.token;
+        uint256 amount = invoice.amount;
+        uint64 paidAt = uint64(block.timestamp);
 
-        // Payment successful, update invoice state
+        // EFFECTS - Update state BEFORE external call (CEI pattern)
         invoice.paid = true;
         invoice.payer = msg.sender;
-        invoice.paidAt = uint64(block.timestamp);
+        invoice.paidAt = paidAt;
+
+        // INTERACTIONS - External call LAST
+        // SafeERC20 will revert if transfer fails, which will revert state changes
+        IERC20(token).safeTransferFrom(msg.sender, merchant, amount);
 
         emit InvoicePaid(
             invoiceId,
-            invoice.merchant,
+            merchant,
             msg.sender,
-            invoice.token,
-            invoice.amount,
-            invoice.paidAt
+            token,
+            amount,
+            paidAt
         );
     }
 
