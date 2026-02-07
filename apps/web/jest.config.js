@@ -37,7 +37,7 @@ const customJestConfig = {
   },
   testMatch: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
   transformIgnorePatterns: [
-    'node_modules/(?!.*(viem|wagmi|@wagmi|@avax-usdc-invoices))',
+    'node_modules/(?!.*(viem|wagmi|@wagmi|@tanstack|@avax-usdc-invoices))',
     '^.+\\.module\\.(css|sass|scss)$',
   ],
 };

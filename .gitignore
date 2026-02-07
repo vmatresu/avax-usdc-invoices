@@ -34,3 +34,4 @@ out/
 contracts/.env
 contracts/.env.fuji
 contracts/.env.mainnet
+*.tsbuildinfo

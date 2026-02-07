@@ -120,24 +120,22 @@ contract InvoiceManager is ReentrancyGuard {
         if (invoice.dueAt != 0 && block.timestamp > invoice.dueAt) revert InvoiceExpired();
 
         // Transfer USDC from payer to merchant
-        // SafeERC20 handles non-standard return values and reverts
-        try IERC20(invoice.token).safeTransferFrom(msg.sender, invoice.merchant, invoice.amount) {
-            // Payment successful, update invoice state
-            invoice.paid = true;
-            invoice.payer = msg.sender;
-            invoice.paidAt = uint64(block.timestamp);
+        // SafeERC20 will revert if transfer fails
+        IERC20(invoice.token).safeTransferFrom(msg.sender, invoice.merchant, invoice.amount);
 
-            emit InvoicePaid(
-                invoiceId,
-                invoice.merchant,
-                msg.sender,
-                invoice.token,
-                invoice.amount,
-                invoice.paidAt
-            );
-        } catch {
-            revert PaymentFailed();
-        }
+        // Payment successful, update invoice state
+        invoice.paid = true;
+        invoice.payer = msg.sender;
+        invoice.paidAt = uint64(block.timestamp);
+
+        emit InvoicePaid(
+            invoiceId,
+            invoice.merchant,
+            msg.sender,
+            invoice.token,
+            invoice.amount,
+            invoice.paidAt
+        );
     }
 
     /**

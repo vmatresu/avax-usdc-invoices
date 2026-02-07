@@ -8,6 +8,15 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { InvoiceRepository } from '../services/InvoiceRepository';
 import { useInvoice, useMerchantInvoices } from './useInvoice';
 
+// Mock wagmi at the top level before any imports
+jest.mock('wagmi', () => ({
+  useAccount: jest.fn(() => ({
+    address: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
+    isConnected: true,
+  })),
+  useChainId: jest.fn(() => ({ chainId: 43114 })),
+}));
+
 // Mock InvoiceRepository
 jest.mock('../services/InvoiceRepository', () => ({
   InvoiceRepository: {
@@ -17,6 +26,15 @@ jest.mock('../services/InvoiceRepository', () => ({
     })),
   },
 }));
+
+// Type the mocked repository
+const mockRepository = {
+  getInvoice: jest.fn(),
+  getMerchantInvoices: jest.fn(),
+} as any;
+
+// Override the getInstance to return our mock
+(InvoiceRepository.getInstance as jest.Mock).mockReturnValue(mockRepository);
 
 // Mock logger
 jest.mock('@avax-usdc-invoices/shared', () => ({
@@ -41,7 +59,7 @@ describe('useInvoice', () => {
     paidAt: 0,
   };
 
-  const repository = InvoiceRepository.getInstance();
+  const repository = mockRepository;
 
   beforeEach(() => {
     jest.clearAllMocks();

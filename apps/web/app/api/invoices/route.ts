@@ -31,6 +31,8 @@ export async function GET(request: NextRequest) {
           invoiceId: log.args.invoiceId,
           uuid: log.args.invoiceId,
           ...invoice,
+          // Convert bigint to string for JSON serialization
+          amount: invoice.amount.toString(),
         };
       })
     );
