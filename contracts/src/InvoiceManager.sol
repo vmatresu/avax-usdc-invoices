@@ -14,29 +14,39 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  * - Payments transfer directly from payer to merchant in the same transaction
  * - Uses SafeERC20 to handle non-standard token return values
  * - No admin keys or upgradability - immutable and transparent
- * - Native USDC only (not USDC.e) - verify token address before use
+ * - Native USDC only (not USDC.e) - enforced via address validation
  */
 contract InvoiceManager is ReentrancyGuard {
     using SafeERC20 for IERC20;
+
+    // Native USDC addresses on Avalanche (Circle-issued, NOT USDC.e)
+    // Using constant for zero storage cost - addresses are inlined into bytecode
+    address public constant MAINNET_USDC = 0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E;
+    address public constant FUJI_USDC = 0x5425890298aed601595a70AB815c96711a31Bc65;
 
     // Custom errors for gas efficiency and clarity
     error InvoiceAlreadyExists(bytes32 invoiceId);
     error InvoiceNotFound(bytes32 invoiceId);
     error InvalidAmount();
+    error InvalidToken();
     error InvoiceAlreadyPaid();
     error InvoiceExpired();
     error PaymentFailed();
     error MerchantMismatch();
 
-    // Invoice data structure
+    // Invoice data structure - optimized for storage packing
+    // Slot 1: merchant (20 bytes) + paid (1 byte) = 21 bytes
+    // Slot 2: token (20 bytes) + dueAt (8 bytes) = 28 bytes
+    // Slot 3: payer (20 bytes) + paidAt (8 bytes) = 28 bytes
+    // Slot 4: amount (16 bytes)
     struct Invoice {
-        address merchant;
-        address token;
-        uint256 amount;
-        uint64 dueAt;
-        bool paid;
-        address payer;
-        uint64 paidAt;
+        address merchant;   // 20 bytes
+        bool paid;          // 1 byte (packed with merchant)
+        address token;      // 20 bytes
+        uint64 dueAt;       // 8 bytes (packed with token)
+        address payer;      // 20 bytes
+        uint64 paidAt;      // 8 bytes (packed with payer)
+        uint128 amount;     // 16 bytes (sufficient for 340M+ USDC)
     }
 
     // State variables
@@ -80,15 +90,18 @@ contract InvoiceManager is ReentrancyGuard {
         // Validate token is a contract
         if (token.code.length == 0) revert InvalidAmount();
 
-        // Store invoice
+        // Validate token is a known USDC address (prevents USDC.e or malicious tokens)
+        if (token != MAINNET_USDC && token != FUJI_USDC) revert InvalidToken();
+
+        // Store invoice (field order matches optimized struct)
         invoices[invoiceId] = Invoice({
             merchant: msg.sender,
-            token: token,
-            amount: amount,
-            dueAt: dueAt,
             paid: false,
+            token: token,
+            dueAt: dueAt,
             payer: address(0),
-            paidAt: 0
+            paidAt: 0,
+            amount: uint128(amount)
         });
 
         emit InvoiceCreated(invoiceId, msg.sender, token, amount, dueAt);

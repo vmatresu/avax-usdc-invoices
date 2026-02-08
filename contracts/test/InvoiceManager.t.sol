@@ -81,6 +81,9 @@ contract InvoiceManagerTest is Test {
     address public payer = address(0x2);
     address public other = address(0x3);
 
+    // Fuji USDC address (used for validation in InvoiceManager)
+    address public constant FUJI_USDC = 0x5425890298aed601595a70AB815c96711a31Bc65;
+
     bytes32 public constant INVOICE_ID = keccak256(abi.encodePacked("invoice-1"));
     uint256 public constant AMOUNT = 100 * 1e6; // 100 USDC
     
@@ -105,7 +108,12 @@ contract InvoiceManagerTest is Test {
     );
 
     function setUp() public {
+        // Deploy mock USDC at the actual Fuji USDC address using vm.etch
+        // This allows the InvoiceManager's USDC validation to pass
         usdc = new MockUSDC();
+        vm.etch(FUJI_USDC, address(usdc).code);
+        usdc = MockUSDC(FUJI_USDC);
+        
         invoiceManager = new InvoiceManager();
         
         // Compute DUE_AT at runtime
@@ -272,11 +280,29 @@ contract InvoiceManagerTest is Test {
     }
 
     // ============================================
-    // ERC-20 Failure Behavior Tests
+    // Token Validation Tests
     // ============================================
 
+    function test_RejectNonUSDCToken() public {
+        // Create a fake token that is NOT at a valid USDC address
+        MockUSDC fakeToken = new MockUSDC();
+        
+        vm.prank(merchant);
+        vm.expectRevert(abi.encodeWithSelector(InvoiceManager.InvalidToken.selector));
+        invoiceManager.createInvoice(INVOICE_ID, address(fakeToken), AMOUNT, DUE_AT);
+    }
+
+    // ============================================
+    // ERC-20 Failure Behavior Tests
+    // ============================================
+    // Note: With USDC validation, these tests use vm.etch to place faulty tokens
+    // at the FUJI_USDC address to test transfer failure scenarios
+
     function test_Erc20ReturnsFalse() public {
+        // Create faulty token and etch it to FUJI_USDC address
         MockUSDC faultyToken = new MockUSDC();
+        vm.etch(FUJI_USDC, address(faultyToken).code);
+        faultyToken = MockUSDC(FUJI_USDC);
         faultyToken.mint(payer, AMOUNT);
 
         vm.prank(merchant);
@@ -294,7 +320,10 @@ contract InvoiceManagerTest is Test {
     }
 
     function test_Erc20Reverts() public {
+        // Create faulty token and etch it to FUJI_USDC address
         MockUSDC faultyToken = new MockUSDC();
+        vm.etch(FUJI_USDC, address(faultyToken).code);
+        faultyToken = MockUSDC(FUJI_USDC);
         faultyToken.mint(payer, AMOUNT);
 
         vm.prank(merchant);
@@ -375,7 +404,10 @@ contract InvoiceManagerTest is Test {
 
     function test_ReentrancyGuard() public {
         // Create a malicious token that tries to re-enter the contract
+        // Use vm.etch to place it at FUJI_USDC address so it passes validation
         MaliciousReentrantToken reentrantToken = new MaliciousReentrantToken(invoiceManager, INVOICE_ID);
+        vm.etch(FUJI_USDC, address(reentrantToken).code);
+        reentrantToken = MaliciousReentrantToken(FUJI_USDC);
         reentrantToken.mint(payer, AMOUNT);
 
         vm.prank(merchant);
