@@ -29,7 +29,10 @@ export function bytes32ToHex(bytes32: string): string {
 }
 
 export function uuidToBytes32(uuid: string): string {
-  return `0x${uuid.replace(/-/g, '')}`;
+  // UUID without dashes = 32 hex chars (16 bytes)
+  // bytes32 requires 64 hex chars (32 bytes), so pad with zeros
+  const hex = uuid.replace(/-/g, '');
+  return `0x${hex.padEnd(64, '0')}`;
 }
 
 export function shortenTxHash(hash: string): string {

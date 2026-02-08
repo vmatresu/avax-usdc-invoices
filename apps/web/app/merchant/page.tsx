@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { ConnectButton } from '@/components/ui/ConnectButton';
+import { DatePicker } from '@/components/ui/DatePicker';
+import { ErrorDisplay } from '@/components/ui/ErrorDisplay';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { INVOICE_MANAGER_ABI } from '@/lib/contracts';
@@ -34,12 +36,12 @@ interface Invoice {
 export default function MerchantPage() {
   const { address, isConnected } = useAccount();
   const [amount, setAmount] = useState('');
-  const [dueDate, setDueDate] = useState('');
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
+  const { writeContract, data: hash, isPending, error: contractWriteError } = useWriteContract();
   const { isLoading: isConfirming } = useWaitForTransactionReceipt({
     hash,
   });
@@ -65,7 +67,7 @@ export default function MerchantPage() {
     if (!address) return;
 
     const amountInWei = parseUnits(amount, 6);
-    const dueAtTimestamp = dueDate ? BigInt(Math.floor(new Date(dueDate).getTime() / 1000)) : 0n;
+    const dueAtTimestamp = dueDate ? BigInt(Math.floor(dueDate.getTime() / 1000)) : 0n;
     const uuid = uuidv4();
     const invoiceId = uuidToBytes32(uuid);
 
@@ -234,11 +236,12 @@ export default function MerchantPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="dueDate">Due Date (Optional)</Label>
-                    <Input
+                    <DatePicker
                       id="dueDate"
-                      type="datetime-local"
                       value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
+                      onChange={setDueDate}
+                      placeholder="Select due date"
+                      fromDate={new Date()}
                     />
                   </div>
 
@@ -248,11 +251,7 @@ export default function MerchantPage() {
                     </Alert>
                   )}
 
-                  {writeError && (
-                    <Alert variant="destructive">
-                      <AlertDescription>{(writeError as Error).message}</AlertDescription>
-                    </Alert>
-                  )}
+                  <ErrorDisplay error={contractWriteError} />
 
                   <Button
                     type="submit"
@@ -325,9 +324,9 @@ export default function MerchantPage() {
                   </div>
                 ) : (
                   <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                    {invoices.map((invoice, index) => (
+                    {invoices.map((invoice) => (
                       <div
-                        key={index}
+                        key={invoice.invoiceId}
                         className="p-4 rounded-lg bg-muted/30 border border-white/5 hover:border-white/10 transition-all"
                       >
                         <div className="flex items-center justify-between gap-4">
