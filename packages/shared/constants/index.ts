@@ -9,6 +9,13 @@ import type { NetworkConfig } from '../types';
  * Network configurations
  */
 export const NETWORKS: Record<string, NetworkConfig> = {
+  LOCAL: {
+    chainId: 31337,
+    name: 'Local Anvil',
+    rpcUrl: 'http://localhost:8545',
+    explorerUrl: 'http://localhost:8545',
+    nativeTokenSymbol: 'ETH',
+  },
   FUJI: {
     chainId: 43113,
     name: 'Avalanche Fuji Testnet',
@@ -29,6 +36,7 @@ export const NETWORKS: Record<string, NetworkConfig> = {
  * USDC contract addresses (Circle-issued, native - NOT USDC.e)
  */
 export const USDC_ADDRESSES: Record<number, string> = {
+  31337: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512', // Local (mock USDC)
   43113: '0x5425890298aed601595a70AB815c96711a31Bc65', // Fuji
   43114: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E', // Mainnet
 };

@@ -2,6 +2,33 @@
 
 Complete guide for local development with Anvil blockchain and the InvoiceManager dApp.
 
+## Quick Reference
+
+### MetaMask Configuration
+```
+Network Name: Local Anvil
+RPC URL: http://localhost:8545
+Chain ID: 31337
+Currency Symbol: ETH
+```
+
+### Test Account Private Key
+```
+0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+```
+
+### Contract Addresses
+```
+InvoiceManager: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
+Mock USDC: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+```
+
+### Web Application
+```
+URL: http://localhost:3000
+Environment: .env.local
+```
+
 ## Overview
 
 Local development allows you to test the InvoiceManager smart contract and web application without spending real money on testnet or mainnet. This guide covers:
@@ -100,34 +127,86 @@ Edit `apps/web/.env.local` with your local deployment details:
 # Local network configuration
 NEXT_PUBLIC_CHAIN_ID=31337
 NEXT_PUBLIC_RPC_URL=http://localhost:8545
-NEXT_PUBLIC_USDC_ADDRESS=0x5425890298aed601595a70AB815c96711a31Bc65
+NEXT_PUBLIC_USDC_ADDRESS=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
 NEXT_PUBLIC_EXPLORER_BASE_URL=http://localhost:8545
-NEXT_PUBLIC_INVOICE_MANAGER_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
+NEXT_PUBLIC_INVOICE_MANAGER_ADDRESS=0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
 ```
 
-**Note**: The USDC address uses the Fuji testnet address for local testing purposes.
+**Note**: The USDC address uses the deployed mock USDC contract for local testing purposes.
 
-### Step 4: Configure MetaMask
+### **Step 4: Configure MetaMask for Local Testing**
 
 1. **Add Local Network to MetaMask**:
-   - Open MetaMask
-   - Click on the network dropdown
-   - Click "Add Network" → "Add a network manually"
+   - Open MetaMask extension in your browser
+   - Click on the network dropdown (usually says "Ethereum Mainnet")
+   - Click "Add Network" or "Add network manually"
    - Enter these details:
-     - **Network Name**: Local Anvil
-     - **New RPC URL**: `http://localhost:8545`
-     - **Chain ID**: `31337`
-     - **Currency Symbol**: `ETH`
-     - **Block Explorer URL**: `http://localhost:8545` (optional)
+     ```
+     Network Name: Local Anvil
+     New RPC URL: http://localhost:8545
+     Chain ID: 31337
+     Currency Symbol: ETH
+     Block Explorer URL: http://localhost:8545 (optional)
+     ```
+   - Click "Save" or "Add"
 
 2. **Import Test Account**:
-   - In MetaMask, click on your account icon
+   - In MetaMask, click your account icon (top right)
    - Select "Import Account"
    - Enter the private key from Anvil output:
      ```
      0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
      ```
+   - Click "Import"
    - The imported address should be: `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
+
+3. **Connect to Web Application**:
+   - Refresh your browser at http://localhost:3000
+   - Click "Connect Your Wallet"
+   - Select MetaMask from the wallet options
+   - Approve the connection in MetaMask
+   - Make sure you're on the "Local Anvil" network in MetaMask
+
+4. **Verify Connection**:
+   - You should see your connected wallet address in the web app
+   - MetaMask should show "Local Anvil" as the selected network
+   - Your account should show ETH balance from Anvil (10,000 ETH)
+
+### Wallet Connection Troubleshooting
+
+**Common Issues and Solutions**:
+
+**Issue: "Connection header did not include 'upgrade'"**
+- **Solution**: This was fixed in the wagmi configuration. Ensure web app is restarted after configuration changes.
+
+**Issue: "Failed to load receipt. The invoice may not exist"**
+- **Solution**: This was resolved by deploying the correct contracts. Ensure:
+  - InvoiceManager is deployed at: `0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0`
+  - Mock USDC is deployed at: `0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512`
+
+**Issue: MetaMask cannot find the local network**
+- **Solution**: 
+  - Double-check Chain ID is exactly `31337`
+  - Verify RPC URL is `http://localhost:8545`
+  - Try adding as "Custom RPC" instead of "Add Network"
+  - Ensure Anvil is running: `ps aux | grep anvil`
+
+**Issue: Wallet connection fails**
+- **Solution**:
+  - Check Anvil is running: `curl http://localhost:8545`
+  - Restart MetaMask extension (disable/enable)
+  - Clear browser cache and refresh
+  - Check browser console for error messages
+
+**Issue: Account has no balance**
+- **Solution**: This is normal for local testing. Anvil provides test accounts with 10,000 ETH each.
+
+**Issue: Transaction fails**
+- **Solution**:
+  - Ensure you're using the correct contract addresses
+  - Check that you have sufficient ETH balance for gas
+  - Verify the invoice exists before trying to pay it
+  - Check Anvil console for detailed error messages
 
 ### Step 5: Start Web Application
 

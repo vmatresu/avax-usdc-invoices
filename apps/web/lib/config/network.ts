@@ -28,7 +28,16 @@ export class NetworkConfigService implements INetworkConfig {
   }
 
   getNetworkConfig(): NetworkConfig {
-    const networkName = this.chainId === 43114 ? 'MAINNET' : 'FUJI';
+    let networkName: string;
+
+    if (this.chainId === 31337) {
+      networkName = 'LOCAL';
+    } else if (this.chainId === 43114) {
+      networkName = 'MAINNET';
+    } else {
+      networkName = 'FUJI';
+    }
+
     const config = NETWORKS[networkName];
 
     if (!config) {
@@ -67,7 +76,7 @@ export class NetworkConfigService implements INetworkConfig {
   }
 
   isTestnet(): boolean {
-    return this.chainId === 43113;
+    return this.chainId === 43113 || this.chainId === 31337;
   }
 
   getNetworkName(): string {

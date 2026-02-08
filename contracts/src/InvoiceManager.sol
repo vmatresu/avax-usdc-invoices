@@ -23,6 +23,7 @@ contract InvoiceManager is ReentrancyGuard {
     // Using constant for zero storage cost - addresses are inlined into bytecode
     address public constant MAINNET_USDC = 0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E;
     address public constant FUJI_USDC = 0x5425890298aed601595a70AB815c96711a31Bc65;
+    address public constant LOCAL_USDC = 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512; // Mock USDC for local testing
 
     // Custom errors for gas efficiency and clarity
     error InvoiceAlreadyExists(bytes32 invoiceId);
@@ -91,7 +92,7 @@ contract InvoiceManager is ReentrancyGuard {
         if (token.code.length == 0) revert InvalidAmount();
 
         // Validate token is a known USDC address (prevents USDC.e or malicious tokens)
-        if (token != MAINNET_USDC && token != FUJI_USDC) revert InvalidToken();
+        if (token != MAINNET_USDC && token != FUJI_USDC && token != LOCAL_USDC) revert InvalidToken();
 
         // Store invoice (field order matches optimized struct)
         invoices[invoiceId] = Invoice({
