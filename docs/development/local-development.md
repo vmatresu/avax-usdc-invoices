@@ -9,7 +9,7 @@ Complete guide for local development with Anvil blockchain and the InvoiceManage
 Network Name: Local Anvil
 RPC URL: http://localhost:8545
 Chain ID: 31337
-Currency Symbol: ETH
+Currency Symbol: AVAX
 ```
 
 ### Test Account Private Key
@@ -145,7 +145,7 @@ NEXT_PUBLIC_INVOICE_MANAGER_ADDRESS=0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
      Network Name: Local Anvil
      New RPC URL: http://localhost:8545
      Chain ID: 31337
-     Currency Symbol: ETH
+     Currency Symbol: AVAX
      Block Explorer URL: http://localhost:8545 (optional)
      ```
    - Click "Save" or "Add"
@@ -170,7 +170,7 @@ NEXT_PUBLIC_INVOICE_MANAGER_ADDRESS=0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
 4. **Verify Connection**:
    - You should see your connected wallet address in the web app
    - MetaMask should show "Local Anvil" as the selected network
-   - Your account should show ETH balance from Anvil (10,000 ETH)
+   - Your account should show AVAX balance from Anvil (10,000 AVAX)
 
 ### Wallet Connection Troubleshooting
 
@@ -199,12 +199,12 @@ NEXT_PUBLIC_INVOICE_MANAGER_ADDRESS=0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
   - Check browser console for error messages
 
 **Issue: Account has no balance**
-- **Solution**: This is normal for local testing. Anvil provides test accounts with 10,000 ETH each.
+- **Solution**: This is normal for local testing. Anvil provides test accounts with 10,000 AVAX each.
 
 **Issue: Transaction fails**
 - **Solution**:
   - Ensure you're using the correct contract addresses
-  - Check that you have sufficient ETH balance for gas
+  - Check that you have sufficient AVAX balance for gas
   - Verify the invoice exists before trying to pay it
   - Check Anvil console for detailed error messages
 

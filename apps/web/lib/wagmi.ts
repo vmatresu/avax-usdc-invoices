@@ -12,7 +12,7 @@ import { NetworkConfigService } from './config/network';
 const localAnvil = {
   id: 31337,
   name: 'Local Anvil',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  nativeCurrency: { name: 'Avalanche', symbol: 'AVAX', decimals: 18 },
   rpcUrls: {
     default: { http: ['http://localhost:8545'] },
     public: { http: ['http://localhost:8545'] },

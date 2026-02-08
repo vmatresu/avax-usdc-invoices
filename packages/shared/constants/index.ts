@@ -14,7 +14,7 @@ export const NETWORKS: Record<string, NetworkConfig> = {
     name: 'Local Anvil',
     rpcUrl: 'http://localhost:8545',
     explorerUrl: 'http://localhost:8545',
-    nativeTokenSymbol: 'ETH',
+    nativeTokenSymbol: 'AVAX',
   },
   FUJI: {
     chainId: 43113,
