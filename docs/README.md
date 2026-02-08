@@ -27,6 +27,21 @@ Avalanche USDC Invoices is a minimal, safe-by-default MVP monorepo for on-chain 
 
 ### Quick Start
 
+**For Local Development** (recommended for testing):
+```bash
+# 1. Start local blockchain
+anvil &
+
+# 2. Deploy contract locally
+cd contracts
+forge script script/DeployLocal.s.sol:DeployLocal --rpc-url http://localhost:8545 --broadcast
+
+# 3. Start web app
+cd ../apps/web
+npm run dev
+```
+
+**For Production Setup**:
 1. **Clone the repository**
 
 ```bash
@@ -59,6 +74,8 @@ pnpm dev
 
 Visit `http://localhost:3000` to see the application.
 
+📖 **For detailed local development instructions, see [Local Development Guide](./development/local-development.md)**
+
 ## User Guides
 
 ### For Merchants
@@ -84,6 +101,7 @@ Visit `http://localhost:3000` to see the application.
 ## Development
 
 - [Development Setup](./development/setup.md)
+- [Local Development Guide](./development/local-development.md) ⭐ **NEW**
 - [Code Style Guide](./development/code-style.md)
 - [Linting Guide](./development/linting.md)
 - [Testing Guide](./development/testing.md)

@@ -9,9 +9,10 @@ Complete guide for setting up development environment for Avalanche USDC Invoice
 3. [Installation](#installation)
 4. [Configuration](#configuration)
 5. [Running the Project](#running-the-project)
-6. [Development Workflow](#development-workflow)
-7. [Testing](#testing)
-8. [Troubleshooting](#troubleshooting)
+6. [Local Development with Anvil](./local-development.md) ⭐
+7. [Development Workflow](#development-workflow)
+8. [Testing](#testing)
+9. [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 
@@ -319,6 +320,124 @@ Prettier is already configured in:
 - `packages/shared/.prettierrc`
 
 ## Running the Project
+
+### Local Development with Anvil
+
+#### Quick Start Local Testing
+
+```bash
+# 1. Start local blockchain
+anvil &
+
+# 2. Deploy contract locally
+cd contracts
+forge script script/DeployLocal.s.sol:DeployLocal --rpc-url http://localhost:8545 --broadcast
+
+# 3. Start web app
+cd ../apps/web
+npm run dev
+```
+
+#### Local Development Setup
+
+**Step 1: Configure Local Environment**
+
+```bash
+# Create local environment file
+cp apps/web/.env.example apps/web/.env.local
+```
+
+Edit `apps/web/.env.local`:
+```bash
+NEXT_PUBLIC_CHAIN_ID=31337
+NEXT_PUBLIC_RPC_URL=http://localhost:8545
+NEXT_PUBLIC_USDC_ADDRESS=0x5425890298aed601595a70AB815c96711a31Bc65
+NEXT_PUBLIC_EXPLORER_BASE_URL=http://localhost:8545
+NEXT_PUBLIC_INVOICE_MANAGER_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
+```
+
+**Step 2: Start Local Blockchain**
+
+```bash
+# Start Anvil (local testnet)
+anvil &
+
+# Output will show test accounts and private keys
+# Account #0: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 (10000 ETH)
+# Private Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+```
+
+**Step 3: Deploy Contract Locally**
+
+```bash
+cd contracts
+forge script script/DeployLocal.s.sol:DeployLocal --rpc-url http://localhost:8545 --broadcast
+```
+
+Expected output:
+```
+InvoiceManager deployed locally
+Contract Address: 0x5FbDB2315678afecb367f032d93F642f64180aa3
+```
+
+**Step 4: Configure MetaMask for Local Testing**
+
+1. **Add Local Network**:
+   - Network Name: Local Anvil
+   - RPC URL: http://localhost:8545
+   - Chain ID: 31337
+   - Currency Symbol: ETH
+
+2. **Import Test Account**:
+   - Go to MetaMask → Account → Import Account
+   - Private Key: `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80`
+   - Address: `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
+
+**Step 5: Start Web Application**
+
+```bash
+cd apps/web
+npm run dev
+```
+
+Visit `http://localhost:3000` and connect your wallet.
+
+#### Local Testing Workflow
+
+**Create Test Invoice**:
+1. Connect wallet with imported test account
+2. Navigate to "Create Invoice"
+3. Enter invoice details (amount, due date, etc.)
+4. Sign transaction with MetaMask
+
+**Pay Test Invoice**:
+1. Switch to payer account (import Account #1 from Anvil)
+2. Navigate to "Pay Invoice"
+3. Enter invoice ID or scan QR code
+4. Approve USDC spending (if required)
+5. Sign payment transaction
+
+**Monitor Transactions**:
+- Check Anvil console for transaction details
+- View transaction in "Transaction History" tab
+- Verify contract state changes
+
+#### Local Development Commands
+
+```bash
+# Run contract tests locally
+cd contracts
+forge test --gas-report
+
+# Test specific functionality
+forge test --match test_RejectNonUSDCToken -vvv
+
+# Generate coverage report
+forge coverage
+
+# Clean local deployment
+pkill -f anvil
+```
 
 ### Development Server
 
@@ -813,6 +932,7 @@ forge test -vv
 ---
 
 **Related Documentation**:
+- [Local Development Guide](./local-development.md) ⭐ **NEW**
 - [Code Style Guide](./code-style.md)
 - [Linting Guide](./linting.md)
 - [Testing Guide](./testing.md)
