@@ -1,6 +1,9 @@
 'use client';
 
+import { Footer } from '@/components/layout/Footer';
+import { Header } from '@/components/layout/Header';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { InvoiceRepository } from '@/lib/services/InvoiceRepository';
@@ -70,208 +73,345 @@ export default function ReceiptPage({ params }: { params: { invoiceId: string } 
     void loadReceipt();
   }, [loadReceipt]);
 
+  // Loading State
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-8">
-        <div className="mx-auto max-w-2xl">
-          <div className="flex justify-center py-8">
-            <div className="text-slate-500">Loading receipt...</div>
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center">
+            <div className="w-16 h-16 rounded-2xl skeleton mx-auto mb-4" />
+            <div className="h-6 w-48 skeleton mx-auto mb-2" />
+            <div className="h-4 w-32 skeleton mx-auto" />
           </div>
-        </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
+  // Error State
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-8">
-        <div className="mx-auto max-w-2xl">
-          <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        </div>
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center p-8">
+          <Card className="max-w-md w-full">
+            <CardHeader>
+              <Alert variant="destructive">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            </CardHeader>
+            <CardContent>
+              <Link href="/">
+                <Button variant="outline" className="w-full">
+                  Back to Home
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
       </div>
     );
   }
 
+  // Invoice Not Found
   if (!invoice) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-8">
-        <div className="mx-auto max-w-2xl">
-          <Alert variant="destructive">
-            <AlertTitle>Invoice Not Found</AlertTitle>
-            <AlertDescription>
-              The invoice with ID {shortenAddress(invoiceId)} does not exist.
-            </AlertDescription>
-          </Alert>
-        </div>
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center p-8">
+          <Card className="max-w-md w-full text-center">
+            <CardHeader>
+              <div className="w-16 h-16 rounded-2xl bg-destructive/20 flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-8 h-8 text-destructive"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <CardTitle className="text-2xl">Invoice Not Found</CardTitle>
+              <CardDescription className="mt-2">
+                The invoice with ID {shortenAddress(invoiceId)} does not exist.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/">
+                <Button variant="outline" className="w-full">
+                  Back to Home
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-8">
-      <div className="mx-auto max-w-2xl">
-        <div className="mb-8">
-          <Link href="/" className="text-sm text-slate-500 hover:text-slate-700">
-            ← Back to Home
-          </Link>
-          <h1 className="mt-4 text-4xl font-bold">Payment Receipt</h1>
-          <p className="mt-2 text-slate-600 dark:text-slate-400">
-            Verifiable proof of on-chain payment
-          </p>
-        </div>
+    <div className="min-h-screen flex flex-col">
+      <Header />
 
-        {!invoice.paid && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertTitle>Invoice Not Paid</AlertTitle>
-            <AlertDescription>
-              This invoice has not been paid yet. Please visit the payment page to complete the
-              transaction.
-            </AlertDescription>
-          </Alert>
-        )}
+      <main className="flex-1 py-8 px-4">
+        <div className="container mx-auto max-w-2xl">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+            <Link href="/" className="hover:text-foreground transition-colors">
+              Home
+            </Link>
+            <span>/</span>
+            <span>Receipt</span>
+          </div>
 
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Invoice Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between">
-              <span className="text-slate-500">Invoice ID</span>
-              <span className="font-mono text-sm">{shortenAddress(invoiceId)}</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span className="text-slate-500">Merchant</span>
-              <span className="font-mono text-sm">{shortenAddress(invoice.merchant)}</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span className="text-slate-500">Amount</span>
-              <span className="font-semibold text-2xl">{formatUSDC(invoice.amount)} USDC</span>
-            </div>
-
-            {invoice.dueAt > 0 && (
-              <div className="flex justify-between">
-                <span className="text-slate-500">Due Date</span>
-                <span>{formatDate(invoice.dueAt)}</span>
-              </div>
+          {/* Receipt Header */}
+          <div className="text-center mb-8">
+            {invoice.paid ? (
+              <>
+                <div className="w-20 h-20 rounded-2xl bg-success/20 flex items-center justify-center mx-auto mb-4 animate-scale-in">
+                  <svg
+                    className="w-10 h-10 text-success"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </div>
+                <h1 className="text-3xl font-bold font-heading mb-2">Payment Confirmed</h1>
+                <p className="text-muted-foreground">Your payment has been verified on-chain</p>
+              </>
+            ) : (
+              <>
+                <div className="w-20 h-20 rounded-2xl bg-warning/20 flex items-center justify-center mx-auto mb-4">
+                  <svg
+                    className="w-10 h-10 text-warning"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <h1 className="text-3xl font-bold font-heading mb-2">Payment Pending</h1>
+                <p className="text-muted-foreground">This invoice has not been paid yet</p>
+              </>
             )}
+          </div>
 
-            <div className="flex justify-between">
-              <span className="text-slate-500">Status</span>
-              {invoice.paid ? (
-                <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
-                  Paid
-                </span>
-              ) : (
-                <span className="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-sm font-medium text-yellow-800">
-                  Pending
-                </span>
-              )}
-            </div>
+          {!invoice.paid && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertTitle>Invoice Not Paid</AlertTitle>
+              <AlertDescription>
+                This invoice has not been paid yet. Please visit the payment page to complete the
+                transaction.
+              </AlertDescription>
+            </Alert>
+          )}
 
-            {invoice.paid && invoice.payer && (
-              <div className="flex justify-between">
-                <span className="text-slate-500">Payer</span>
-                <span className="font-mono text-sm">{shortenAddress(invoice.payer)}</span>
+          {/* Receipt Card */}
+          <Card variant={invoice.paid ? 'featured' : 'default'} className="mb-6">
+            <CardHeader className="text-center border-b border-white/5 pb-6">
+              <div className="text-sm text-muted-foreground mb-2">INVOICE</div>
+              <div className="font-mono text-sm text-muted-foreground">
+                {shortenAddress(invoiceId)}
               </div>
-            )}
-
-            {invoice.paid && invoice.paidAt > 0 && (
-              <div className="flex justify-between">
-                <span className="text-slate-500">Paid At</span>
-                <span>{formatDate(invoice.paidAt)}</span>
+              <div className="text-4xl font-bold font-heading gradient-text mt-4">
+                {formatUSDC(invoice.amount)} USDC
               </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {invoice.paid && paymentLog && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment Details</CardTitle>
-              <CardDescription>Complete transaction information for verification</CardDescription>
+              <div className="mt-4">
+                <Badge variant={invoice.paid ? 'success' : 'pending'}>
+                  {invoice.paid ? 'Paid' : 'Pending'}
+                </Badge>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Transaction Hash</span>
-                <a
-                  href={`${explorerUrl}/tx/${paymentLog.transactionHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono text-sm text-blue-600 hover:underline"
-                >
-                  {shortenAddress(paymentLog.transactionHash)}
-                </a>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-slate-500">Block Number</span>
-                <span className="font-mono text-sm">{paymentLog.blockNumber.toString()}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-slate-500">Amount Paid</span>
-                <span className="font-semibold">
-                  {formatUSDC(paymentLog.args?.amount ?? 0n)} USDC
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-slate-500">Payment Timestamp</span>
-                <span>{formatDate(paymentLog.args?.paidAt ?? 0)}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-slate-500">Token</span>
-                <span className="font-mono text-sm">
-                  {shortenAddress(paymentLog.args?.token ?? invoice.token)}
-                </span>
-              </div>
-
-              {paymentLog.args?.merchant && (
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Merchant Address</span>
-                  <span className="font-mono text-sm">
-                    {shortenAddress(paymentLog.args.merchant)}
-                  </span>
+            <CardContent className="pt-6 space-y-4">
+              <div className="grid gap-3">
+                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                  <span className="text-muted-foreground">Merchant</span>
+                  <span className="font-mono text-sm">{shortenAddress(invoice.merchant)}</span>
                 </div>
-              )}
 
-              {paymentLog.args?.payer && (
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Payer Address</span>
-                  <span className="font-mono text-sm">{shortenAddress(paymentLog.args.payer)}</span>
-                </div>
-              )}
+                {invoice.dueAt > 0 && (
+                  <div className="flex justify-between items-center py-2 border-b border-white/5">
+                    <span className="text-muted-foreground">Due Date</span>
+                    <span>{formatDate(invoice.dueAt)}</span>
+                  </div>
+                )}
+
+                {invoice.paid && invoice.payer && (
+                  <div className="flex justify-between items-center py-2 border-b border-white/5">
+                    <span className="text-muted-foreground">Payer</span>
+                    <span className="font-mono text-sm">{shortenAddress(invoice.payer)}</span>
+                  </div>
+                )}
+
+                {invoice.paid && invoice.paidAt > 0 && (
+                  <div className="flex justify-between items-center py-2 border-b border-white/5">
+                    <span className="text-muted-foreground">Paid At</span>
+                    <span>{formatDate(invoice.paidAt)}</span>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
-        )}
 
-        <div className="mt-6 space-y-2">
-          <h2 className="text-lg font-semibold">Verify This Payment</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            To verify this payment independently, you can:
-          </p>
-          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-slate-600 dark:text-slate-400">
-            <li>Visit the Avalanche explorer at {explorerUrl}</li>
-            <li>Search for the transaction hash</li>
-            <li>Review the InvoicePaid event</li>
-            <li>Confirm the invoice amount matches</li>
-          </ul>
-        </div>
+          {/* Transaction Details */}
+          {invoice.paid && paymentLog && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg">Transaction Details</CardTitle>
+                <CardDescription>Blockchain verification information</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-3">
+                  <div className="flex justify-between items-center py-2 border-b border-white/5">
+                    <span className="text-muted-foreground">Transaction Hash</span>
+                    <a
+                      href={`${explorerUrl}/tx/${paymentLog.transactionHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-sm text-primary hover:underline flex items-center gap-1"
+                    >
+                      {shortenAddress(paymentLog.transactionHash)}
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                      </svg>
+                    </a>
+                  </div>
 
-        <div className="mt-6">
-          <Link href={`/pay/${invoiceId}`}>
-            <Button className="w-full" variant="outline">
-              Back to Invoice
-            </Button>
-          </Link>
+                  <div className="flex justify-between items-center py-2 border-b border-white/5">
+                    <span className="text-muted-foreground">Block Number</span>
+                    <span className="font-mono text-sm">{paymentLog.blockNumber.toString()}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-2 border-b border-white/5">
+                    <span className="text-muted-foreground">Amount Paid</span>
+                    <span className="font-semibold">
+                      {formatUSDC(paymentLog.args?.amount ?? 0n)} USDC
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-2 border-b border-white/5">
+                    <span className="text-muted-foreground">Payment Timestamp</span>
+                    <span>{formatDate(paymentLog.args?.paidAt ?? 0)}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center py-2 border-b border-white/5">
+                    <span className="text-muted-foreground">Token</span>
+                    <span className="font-mono text-sm">
+                      {shortenAddress(paymentLog.args?.token ?? invoice.token)}
+                    </span>
+                  </div>
+
+                  {paymentLog.args?.merchant && (
+                    <div className="flex justify-between items-center py-2 border-b border-white/5">
+                      <span className="text-muted-foreground">Merchant Address</span>
+                      <span className="font-mono text-sm">
+                        {shortenAddress(paymentLog.args.merchant)}
+                      </span>
+                    </div>
+                  )}
+
+                  {paymentLog.args?.payer && (
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-muted-foreground">Payer Address</span>
+                      <span className="font-mono text-sm">
+                        {shortenAddress(paymentLog.args.payer)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Verification Info */}
+          <Card variant="ghost" className="mb-6">
+            <CardContent className="pt-6">
+              <h3 className="font-heading font-semibold mb-3 flex items-center gap-2">
+                <svg
+                  className="w-5 h-5 text-primary"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
+                </svg>
+                Verify This Payment
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                To verify this payment independently:
+              </p>
+              <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+                <li>
+                  Visit the{' '}
+                  <a
+                    href={explorerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Avalanche Explorer
+                  </a>
+                </li>
+                <li>Search for the transaction hash</li>
+                <li>Review the InvoicePaid event in the logs</li>
+                <li>Confirm the invoice ID and amount match</li>
+              </ol>
+            </CardContent>
+          </Card>
+
+          {/* Actions */}
+          <div className="flex gap-4">
+            <Link href={`/pay/${invoiceId}`} className="flex-1">
+              <Button className="w-full" variant="outline">
+                Back to Invoice
+              </Button>
+            </Link>
+            <Link href="/" className="flex-1">
+              <Button className="w-full">Go Home</Button>
+            </Link>
+          </div>
         </div>
-      </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }
