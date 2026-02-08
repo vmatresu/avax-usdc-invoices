@@ -3,6 +3,7 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { ConnectButton } from '@/components/ui/ConnectButton';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { INVOICE_MANAGER_ABI } from '@/lib/contracts';
@@ -128,6 +129,9 @@ export default function MerchantPage() {
                 Please connect your wallet to create and manage invoices
               </CardDescription>
             </CardHeader>
+            <CardContent className="pt-6">
+              <ConnectButton />
+            </CardContent>
           </Card>
         </div>
       </div>
