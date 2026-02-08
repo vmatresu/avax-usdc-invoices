@@ -13,25 +13,55 @@ build
 out
 coverage
 broadcast
-!/.forge-snapshots/
-
 # Foundry
 *.tvm
 *.tvs
 
-# Hardhat
-typechain
-typechain-types
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
 
 # Next.js
 .next/
 out/
+
+# Production
+build/
+dist/
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env*.local
+.env
+
+# Vercel
 .vercel
 
-# Environment files (but keep .env.example)
-.env.fuji
-.env.mainnet
-contracts/.env
-contracts/.env.fuji
-contracts/.env.mainnet
+# TypeScript
 *.tsbuildinfo
+next-env.d.ts
+
+# Never commit private keys or sensitive environment files
+.env
+.env.local
+.env.*.local
+fund-wallet.sh
+*.key
+*.pem
+private_keys.txt
+secrets.txt
+fund-wallet.log
+check-wallet.log
+*.wallet

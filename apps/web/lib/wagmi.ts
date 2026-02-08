@@ -6,6 +6,7 @@
 import { createPublicClient, http as viemHttp } from 'viem';
 import { createConfig, http } from 'wagmi';
 import { avalanche, avalancheFuji } from 'wagmi/chains';
+import { injected, metaMask } from 'wagmi/connectors';
 import { NetworkConfigService } from './config/network';
 
 // Define local Anvil chain
@@ -24,7 +25,8 @@ const networkConfig = NetworkConfigService.getInstance();
 const chainId = networkConfig.getChainId();
 
 export const config = createConfig({
-  chains: chainId === 31337 ? [localAnvil] : chainId === 43114 ? [avalanche] : [avalancheFuji],
+  chains: [localAnvil, avalanche, avalancheFuji],
+  connectors: [injected(), metaMask()],
   transports: {
     [localAnvil.id]: http('http://localhost:8545'),
     [avalanche.id]: http(

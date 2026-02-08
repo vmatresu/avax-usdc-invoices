@@ -65,5 +65,8 @@
     "packages/*",
     "contracts"
   ],
-  "packageManager": "pnpm@8.15.0"
+  "packageManager": "pnpm@8.15.0",
+  "dependencies": {
+    "viem": "^2.7.1"
+  }
 }
